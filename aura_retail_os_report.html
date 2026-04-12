@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Aura Retail OS — Adaptive Autonomous System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@300;400;500&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg:        #080c10;
+    --bg2:       #0d1117;
+    --bg3:       #111820;
+    --border:    #1e2d3d;
+    --border2:   #243447;
+    --text:      #c9d8e8;
+    --text-dim:  #5d7a96;
+    --text-mute: #2e4257;
+    --accent:    #00d4ff;
+    --accent2:   #0099cc;
+    --green:     #00e5a0;
+    --amber:     #ffb547;
+    --red:       #ff4d6d;
+    --purple:    #b48eff;
+    --heading:   #e8f4ff;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 15px;
+    line-height: 1.7;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── Grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: 0.25;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── Glow blobs ── */
+  .blob {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(120px);
+    pointer-events: none;
+    z-index: 0;
+  }
+  .blob-1 { width: 600px; height: 600px; background: rgba(0,212,255,0.04); top: -200px; left: -200px; }
+  .blob-2 { width: 500px; height: 500px; background: rgba(0,229,160,0.03); bottom: 10%; right: -150px; }
+
+  /* ── Layout ── */
+  .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 32px 120px; }
+
+  /* ── Nav bar ── */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(8,12,16,0.85);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+  }
+  .nav-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .nav-logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .nav-links { display: flex; gap: 28px; }
+  .nav-links a {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--accent); }
+
+  /* ── Hero ── */
+  .hero {
+    padding: 96px 0 72px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 80px;
+  }
+  .hero-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .hero-tag::before {
+    content: '';
+    display: inline-block;
+    width: 24px;
+    height: 1px;
+    background: var(--accent);
+  }
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: 1.05;
+    color: var(--heading);
+    letter-spacing: -0.02em;
+    margin-bottom: 12px;
+  }
+  h1 span { color: var(--accent); }
+  .hero-sub {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: clamp(18px, 2.5vw, 26px);
+    color: var(--text-dim);
+    margin-bottom: 28px;
+  }
+  .hero-desc {
+    max-width: 640px;
+    color: var(--text);
+    font-size: 15px;
+    line-height: 1.8;
+    margin-bottom: 40px;
+  }
+  .hero-badges { display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    padding: 5px 14px;
+    border-radius: 4px;
+    border: 1px solid;
+    text-transform: uppercase;
+  }
+  .badge-green  { color: var(--green);  border-color: rgba(0,229,160,0.35); background: rgba(0,229,160,0.06); }
+  .badge-blue   { color: var(--accent); border-color: rgba(0,212,255,0.35); background: rgba(0,212,255,0.06); }
+  .badge-amber  { color: var(--amber);  border-color: rgba(255,181,71,0.35); background: rgba(255,181,71,0.06); }
+  .badge-purple { color: var(--purple); border-color: rgba(180,142,255,0.35); background: rgba(180,142,255,0.06); }
+  .badge-red    { color: var(--red);    border-color: rgba(255,77,109,0.35); background: rgba(255,77,109,0.06); }
+
+  /* ── Section headings ── */
+  .section { margin-bottom: 80px; }
+  .section-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+    margin-bottom: 8px;
+  }
+  h2 {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 30px);
+    color: var(--heading);
+    letter-spacing: -0.01em;
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ── Overview cards ── */
+  .overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 40px;
+  }
+  .stat-card {
+    background: var(--bg2);
+    padding: 28px 24px;
+    transition: background 0.2s;
+  }
+  .stat-card:hover { background: var(--bg3); }
+  .stat-number {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .stat-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  /* ── Pattern cards ── */
+  .pattern-grid { display: grid; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+
+  .pattern-card {
+    background: var(--bg2);
+    padding: 32px 36px;
+    display: grid;
+    grid-template-columns: 64px 1fr;
+    gap: 24px;
+    align-items: start;
+    transition: background 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+  .pattern-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+  }
+  .pattern-card.p-facade::before    { background: var(--accent); }
+  .pattern-card.p-singleton::before { background: var(--green); }
+  .pattern-card.p-factory::before   { background: var(--amber); }
+  .pattern-card.p-state::before     { background: var(--purple); }
+
+  .pattern-card:hover { background: var(--bg3); }
+
+  .pattern-num {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--text-mute);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding-top: 4px;
+  }
+  .pattern-num .num {
+    font-size: 28px;
+    line-height: 1;
+  }
+  .pattern-body {}
+  .pattern-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--heading);
+    margin-bottom: 4px;
+  }
+  .pattern-class {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    letter-spacing: 0.05em;
+  }
+  .pattern-why {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.75;
+    margin-bottom: 18px;
+  }
+  .pattern-constraint {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.65;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.03);
+    border-left: 2px solid var(--border2);
+    border-radius: 0 4px 4px 0;
+    margin-bottom: 18px;
+  }
+  .pattern-constraint strong {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .pattern-files { display: flex; flex-wrap: wrap; gap: 6px; }
+  .file-chip {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 3px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--border2);
+    color: var(--text-dim);
+    letter-spacing: 0.02em;
+  }
+  .file-chip.accent  { color: var(--accent);  border-color: rgba(0,212,255,0.3); background: rgba(0,212,255,0.05); }
+  .file-chip.green   { color: var(--green);   border-color: rgba(0,229,160,0.3); background: rgba(0,229,160,0.05); }
+  .file-chip.amber   { color: var(--amber);   border-color: rgba(255,181,71,0.3); background: rgba(255,181,71,0.05); }
+  .file-chip.purple  { color: var(--purple);  border-color: rgba(180,142,255,0.3); background: rgba(180,142,255,0.05); }
+
+  /* ── Architecture layer ── */
+  .arch-stack { display: flex; flex-direction: column; gap: 2px; }
+  .arch-layer {
+    padding: 20px 28px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    background: var(--bg2);
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: default;
+  }
+  .arch-layer:hover { transform: translateX(6px); border-color: var(--border2); }
+  .arch-layer-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-mute);
+    min-width: 48px;
+    text-transform: uppercase;
+  }
+  .arch-layer-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--heading);
+    min-width: 200px;
+  }
+  .arch-layer-classes {
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--text-dim);
+    flex: 1;
+  }
+  .arch-layer-status {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    padding: 3px 10px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .status-done    { color: var(--green); background: rgba(0,229,160,0.08); border: 1px solid rgba(0,229,160,0.25); }
+  .status-pending { color: var(--text-mute); background: rgba(255,255,255,0.03); border: 1px solid var(--border); }
+
+  /* ── Team table ── */
+  .team-grid { display: grid; gap: 2px; background: var(--border); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+  .team-row {
+    display: grid;
+    grid-template-columns: 180px 200px 1fr;
+    gap: 0;
+    background: var(--bg2);
+    transition: background 0.2s;
+  }
+  .team-row:hover { background: var(--bg3); }
+  .team-row.header {
+    background: var(--bg3);
+    border-bottom: 2px solid var(--border2);
+  }
+  .team-cell {
+    padding: 18px 24px;
+    font-size: 13px;
+    border-right: 1px solid var(--border);
+  }
+  .team-cell:last-child { border-right: none; }
+  .team-row.header .team-cell {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-mute);
+  }
+  .member-name {
+    font-family: 'Syne', sans-serif;
+    font-weight: 600;
+    color: var(--heading);
+    font-size: 14px;
+  }
+  .subsystem-name { color: var(--accent); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .file-list { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  /* ── What was implemented summary ── */
+  .impl-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .impl-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px 26px;
+    transition: border-color 0.2s;
+  }
+  .impl-card:hover { border-color: var(--border2); }
+  .impl-card-title {
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--heading);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .impl-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .impl-card ul { list-style: none; padding: 0; }
+  .impl-card ul li {
+    font-size: 13px;
+    color: var(--text);
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+  }
+  .impl-card ul li::before { content: "→"; color: var(--text-mute); font-size: 11px; flex-shrink: 0; margin-top: 1px; }
+  .impl-card ul li:last-child { border-bottom: none; }
+
+  /* ── Diagram section ── */
+  .diagram-section {
+    margin-bottom: 80px;
+  }
+
+  /* ── Animations ── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-up { animation: fadeUp 0.6s ease both; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+  .delay-5 { animation-delay: 0.5s; }
+
+  /* ── Divider ── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 64px 0; }
+
+  @media (max-width: 700px) {
+    .pattern-card { grid-template-columns: 1fr; }
+    .impl-grid { grid-template-columns: 1fr; }
+    .team-row { grid-template-columns: 1fr; }
+    .arch-layer { flex-wrap: wrap; }
+  }
+</style>
+</head>
+<body>
+
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <span class="nav-logo">Aura Retail OS</span>
+    <div class="nav-links">
+      <a href="#overview">Overview</a>
+      <a href="#patterns">Patterns</a>
+      <a href="#team">Team</a>
+      <a href="#diagram">Diagram</a>
+    </div>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero fade-up">
+    <div class="hero-tag">Group Return4 &mdash; OOP Design Patterns Project</div>
+    <h1>Aura Retail <span>OS</span></h1>
+    <div class="hero-sub">Path A &mdash; Adaptive Autonomous System</div>
+    <p class="hero-desc">
+      A smart, multi-kiosk retail operating system built entirely on classical object-oriented
+      design patterns. The system manages pharmacy, food, and emergency relief kiosks through
+      a layered architecture — from a single external facade down to hardware abstraction —
+      with full runtime adaptability, atomic transactions, and zero-coupling event routing.
+    </p>
+    <div class="hero-badges">
+      <span class="badge badge-green">Subtask 01 Complete</span>
+      <span class="badge badge-blue">Patterns 1–4 Implemented</span>
+      <span class="badge badge-amber">Python 3 · No Dependencies</span>
+      <span class="badge badge-purple">9 Patterns Total</span>
+      <span class="badge badge-red">Emergency Override Ready</span>
+    </div>
+  </section>
+
+  <!-- OVERVIEW STATS -->
+  <section class="section fade-up delay-1" id="overview">
+    <div class="section-label">// overview</div>
+    <h2>What Has Been Built</h2>
+
+    <div class="overview-grid">
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Patterns Implemented</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">21</div>
+        <div class="stat-label">Python Files</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">3</div>
+        <div class="stat-label">Kiosk Types</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">4</div>
+        <div class="stat-label">Operating Modes</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">9</div>
+        <div class="stat-label">Total Patterns Planned</div>
+      </div>
+    </div>
+
+    
+  </section>
+
+
+  <!-- PATTERNS -->
+  <section class="section fade-up delay-2" id="patterns">
+    <div class="section-label">// design patterns</div>
+    <h2>Patterns 1–4: Why Each Was Chosen</h2>
+
+    <div class="pattern-grid">
+
+      <!-- PATTERN 1: FACADE -->
+      <div class="pattern-card p-facade">
+        <div class="pattern-num">
+          <span class="num" style="color:var(--accent)">01</span>
+          <span>Facade</span>
+        </div>
+        <div class="pattern-body">
+          <div class="pattern-name">Facade Pattern</div>
+          <div class="pattern-class">KioskInterface &rarr; purchaseItem() · refundTransaction() · runDiagnostics() · restockInventory()</div>
+          <div class="pattern-why">
+            External systems — city dashboards, mobile apps, operator consoles — must never reach
+            into <code>KioskCore</code>, the command system, the inventory manager, or the hardware
+            layer directly. <strong>KioskInterface</strong> is the one and only entry point. It
+            delegates internally to the right subsystem but never exposes how. Adding a new internal
+            subsystem never breaks the external API contract.
+          </div>
+          <div class="pattern-constraint">
+            <strong>Constraint Resolved</strong>
+            "External systems should interact only with this interface." The Facade directly enforces
+            that boundary — nothing outside the diagram calls into KioskCore or lower layers directly.
+          </div>
+          <div class="pattern-files">
+            <span class="file-chip accent">core/kiosk_interface.py</span>
+            <span class="file-chip accent">core/kiosk_core.py</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATTERN 2: SINGLETON -->
+      <div class="pattern-card p-singleton">
+        <div class="pattern-num">
+          <span class="num" style="color:var(--green)">02</span>
+          <span>Singleton</span>
+        </div>
+        <div class="pattern-body">
+          <div class="pattern-name">Singleton Pattern</div>
+          <div class="pattern-class">CentralRegistry · EventBus &rarr; getInstance() always returns the same object</div>
+          <div class="pattern-why">
+            System configuration, kiosk registration, and the event bus must be consistent across
+            every part of the system. Creating multiple instances would produce conflicting state —
+            two registries with different kiosk maps, or two event buses with different subscribers.
+            <strong>CentralRegistry</strong> uses Python's <code>__new__</code> with a
+            double-checked <code>threading.Lock</code> to guarantee exactly one instance, even under
+            concurrent construction attempts.
+          </div>
+          <div class="pattern-constraint">
+            <strong>Constraint Resolved</strong>
+            Spec: "Implement a CentralRegistry that stores global system information such as
+            configuration and system status." The Singleton ensures this is uniquely accessible
+            without being manually passed between every class.
+          </div>
+          <div class="pattern-files">
+            <span class="file-chip green">core/central_registry.py</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATTERN 3: ABSTRACT FACTORY -->
+      <div class="pattern-card p-factory">
+        <div class="pattern-num">
+          <span class="num" style="color:var(--amber)">03</span>
+          <span>Abstract Factory</span>
+        </div>
+        <div class="pattern-body">
+          <div class="pattern-name">Abstract Factory Pattern</div>
+          <div class="pattern-class">KioskFactory &rarr; PharmacyKioskFactory · FoodKioskFactory · EmergencyKioskFactory</div>
+          <div class="pattern-why">
+            A pharmacy kiosk needs a <em>prescription verifier</em>, a <em>sealed dispenser</em>,
+            and a <em>controlled inventory policy</em>. An emergency kiosk needs an <em>open verifier</em>,
+            a <em>basic dispenser</em>, and a <em>rationed inventory policy</em> with a hard cap.
+            Mixing components from different families would produce a broken kiosk. The Abstract
+            Factory guarantees components are always assembled as a compatible set — <code>KioskCore</code>
+            never knows which concrete types it received.
+          </div>
+          <div class="pattern-constraint">
+            <strong>Constraint Resolved</strong>
+            "Different kiosk types must be created — PharmacyKiosk, FoodKiosk, EmergencyReliefKiosk —
+            each factory creates compatible components." Abstract Factory is the only pattern that
+            produces families of related objects in one coordinated step.
+          </div>
+          <div class="pattern-files">
+            <span class="file-chip amber">factory/kiosk_factory.py</span>
+            <span class="file-chip amber">factory/pharmacy_kiosk_factory.py</span>
+            <span class="file-chip amber">factory/food_kiosk_factory.py</span>
+            <span class="file-chip amber">factory/emergency_kiosk_factory.py</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- PATTERN 4: STATE -->
+      <div class="pattern-card p-state">
+        <div class="pattern-num">
+          <span class="num" style="color:var(--purple)">04</span>
+          <span>State</span>
+        </div>
+        <div class="pattern-body">
+          <div class="pattern-name">State Pattern</div>
+          <div class="pattern-class">KioskMode &rarr; ActiveMode · PowerSavingMode · MaintenanceMode · EmergencyLockdownMode</div>
+          <div class="pattern-why">
+            Without the State pattern, <code>KioskCore.handleRequest()</code> would contain a giant
+            <code>if/switch</code> checking the current mode before every action. The State pattern
+            pushes that branching into each mode class. Adding a new mode requires <strong>zero
+            changes</strong> to KioskCore. Each mode completely encapsulates its own behaviour for
+            purchases, refunds, restock, and diagnostics. <strong>EmergencyLockdownMode</strong>
+            overrides all others immediately when the emergency event fires.
+          </div>
+          <div class="pattern-constraint">
+            <strong>Constraint Resolved</strong>
+            "The kiosk must support different operating states — Active, Power-saving, Maintenance,
+            Emergency lockdown. Each state changes how the kiosk behaves when users interact with it."
+            Also satisfies the event priority constraint: EmergencyLockdownMode takes over instantly.
+          </div>
+          <div class="pattern-files">
+            <span class="file-chip purple">modes/kiosk_mode.py</span>
+            <span class="file-chip purple">modes/active_mode.py</span>
+            <span class="file-chip purple">modes/power_saving_mode.py</span>
+            <span class="file-chip purple">modes/maintenance_mode.py</span>
+            <span class="file-chip purple">modes/emergency_lockdown_mode.py</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- TEAM -->
+  <section class="section fade-up delay-4" id="team">
+    <div class="section-label">// team — group return4</div>
+    <h2>Subsystem Responsibilities</h2>
+
+    <div class="team-grid">
+      <div class="team-row header">
+        <div class="team-cell">Member</div>
+        <div class="team-cell">Subsystem</div>
+        <div class="team-cell">Files Committed</div>
+      </div>
+      <div class="team-row">
+        <div class="team-cell"><div class="member-name">Maitry Parikh</div></div>
+        <div class="team-cell"><div class="subsystem-name">Kiosk Core &amp; Payment</div></div>
+        <div class="team-cell">
+          <div class="file-list">
+            <span class="file-chip accent">main.py</span>
+            <span class="file-chip accent">kiosk_interface.py</span>
+            <span class="file-chip accent">kiosk_core.py</span>
+            <span class="file-chip accent">kiosk_factory.py</span>
+            <span class="file-chip accent">pharmacy_kiosk_factory.py</span>
+            <span class="file-chip accent">food_kiosk_factory.py</span>
+            <span class="file-chip accent">emergency_kiosk_factory.py</span>
+          </div>
+        </div>
+      </div>
+      <div class="team-row">
+        <div class="team-cell"><div class="member-name">Khushi Pal</div></div>
+        <div class="team-cell"><div class="subsystem-name">City Monitoring &amp; Events</div></div>
+        <div class="team-cell">
+          <div class="file-list">
+            <span class="file-chip green">central_registry.py</span>
+            <span class="file-chip green">kiosk_mode.py</span>
+            <span class="file-chip green">active_mode.py</span>
+            <span class="file-chip green">power_saving_mode.py</span>
+            <span class="file-chip green">maintenance_mode.py</span>
+            <span class="file-chip green">emergency_lockdown_mode.py</span>
+          </div>
+        </div>
+      </div>
+      <div class="team-row">
+        <div class="team-cell"><div class="member-name">Khushi Odedara</div></div>
+        <div class="team-cell"><div class="subsystem-name">Hardware Abstraction Layer</div></div>
+        <div class="team-cell">
+          <div class="file-list">
+            <span class="file-chip amber">dispenser.py</span>
+            <span class="file-chip amber">sensor_module.py</span>
+            <span class="file-chip amber">verification_module.py</span>
+            <span class="file-chip amber">hardware_controller.py</span>
+          </div>
+        </div>
+      </div>
+      <div class="team-row">
+        <div class="team-cell"><div class="member-name">Hardik Kansara</div></div>
+        <div class="team-cell"><div class="subsystem-name">Inventory System</div></div>
+        <div class="team-cell">
+          <div class="file-list">
+            <span class="file-chip purple">inventory_policy.py</span>
+            <span class="file-chip purple">standard_inventory_policy.py</span>
+            <span class="file-chip purple">emergency_inventory_policy.py</span>
+            <span class="file-chip purple">inventory_manager.py</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <hr class="divider"/>
+
+  <!-- CLASS DIAGRAM -->
+  <section class="diagram-section fade-up delay-5" id="diagram">
+    <div class="section-label">// class diagram</div>
+    <h2>Updated Class Diagram</h2>
+    <div style="background:#fff; border-radius:10px; overflow:hidden; border:1px solid #243447; box-shadow:0 0 60px rgba(0,212,255,0.06); padding: 16px;">
+<div class="mxgraph" style="max-width:100%;border:1px solid transparent;" data-mxgraph="{&quot;highlight&quot;:&quot;#0000ff&quot;,&quot;nav&quot;:true,&quot;resize&quot;:true,&quot;xml&quot;:&quot;&lt;mxfile host=\&quot;app.diagrams.net\&quot; agent=\&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/146.0.0.0 Safari/537.36\&quot; version=\&quot;29.6.6\&quot;&gt;&lt;diagram id=\&quot;N1U_pB7OpAMMB2A7cvme\&quot; name=\&quot;Page-3\&quot;&gt;&lt;mxGraphModel dx=\&quot;1603\&quot; dy=\&quot;865\&quot; grid=\&quot;1\&quot; gridSize=\&quot;10\&quot; guides=\&quot;1\&quot; tooltips=\&quot;1\&quot; connect=\&quot;1\&quot; arrows=\&quot;1\&quot; fold=\&quot;1\&quot; page=\&quot;1\&quot; pageScale=\&quot;1\&quot; pageWidth=\&quot;850\&quot; pageHeight=\&quot;1100\&quot; math=\&quot;0\&quot; shadow=\&quot;0\&quot;&gt;&lt;root&gt;&lt;mxCell id=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;1\&quot; parent=\&quot;0\&quot;/&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-1\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=20;fontStyle=1;fontColor=#1a1a2e;\&quot; value=\&quot;Aura Retail OS — Path A: Adaptive Autonomous System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;1060\&quot; x=\&quot;418\&quot; y=\&quot;280\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-2\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;210\&quot; width=\&quot;210\&quot; x=\&quot;1590\&quot; y=\&quot;320\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-3\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontStyle=1;fontSize=12;fontColor=#333333;\&quot; value=\&quot;Legend\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;180\&quot; x=\&quot;1602\&quot; y=\&quot;328\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-4\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=10;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;16\&quot; x=\&quot;1602\&quot; y=\&quot;356\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-5\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333333;\&quot; value=\&quot;Subsystem / Module\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;354\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-6\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;arcSize=10;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;16\&quot; x=\&quot;1602\&quot; y=\&quot;380\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-7\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333333;\&quot; value=\&quot;Core Class / Interface\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;378\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-8\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=10;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;16\&quot; x=\&quot;1602\&quot; y=\&quot;404\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-9\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333333;\&quot; value=\&quot;Design Pattern\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;402\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-10\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;arcSize=10;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;16\&quot; x=\&quot;1602\&quot; y=\&quot;428\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-11\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333333;\&quot; value=\&quot;External / City System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;426\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-12\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;arcSize=10;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;16\&quot; x=\&quot;1602\&quot; y=\&quot;452\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-13\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;fontColor=#333333;\&quot; value=\&quot;Persistence / Registry\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;450\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-14\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555;\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;10\&quot; width=\&quot;50\&quot; x=\&quot;1432\&quot; y=\&quot;220\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-15\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#333333;\&quot; value=\&quot;Dependency / Call\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;474\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-16\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;strokeColor=#555;\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry height=\&quot;10\&quot; width=\&quot;50\&quot; x=\&quot;1432\&quot; y=\&quot;242\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-17\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontColor=#333333;\&quot; value=\&quot;Event / Notification\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;160\&quot; x=\&quot;1626\&quot; y=\&quot;496\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-18\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=4;dashed=0;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;110\&quot; width=\&quot;760\&quot; x=\&quot;470\&quot; y=\&quot;340\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-19\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#1a3a5c;\&quot; value=\&quot;&amp;lt;&amp;lt;Facade&amp;gt;&amp;gt;  KioskInterface\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;760\&quot; x=\&quot;470\&quot; y=\&quot;346\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-20\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;fontSize=11;\&quot; value=\&quot;+ purchaseItem(productId, userId)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;240\&quot; x=\&quot;486\&quot; y=\&quot;372\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-21\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;fontSize=11;\&quot; value=\&quot;+ refundTransaction(txId)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;220\&quot; x=\&quot;736\&quot; y=\&quot;372\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-22\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;fontSize=11;\&quot; value=\&quot;+ runDiagnostics()\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;220\&quot; x=\&quot;486\&quot; y=\&quot;408\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-23\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#6c8ebf;align=left;fontSize=11;\&quot; value=\&quot;+ restockInventory(productId, qty)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;240\&quot; x=\&quot;716\&quot; y=\&quot;408\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-24\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;align=center;verticalAlign=top;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;Singleton&amp;gt;&amp;gt;&amp;#10;CentralRegistry&amp;#10;&amp;#10;- config: SystemConfig&amp;#10;- kiosks: Map&amp;lt;id, KioskCore&amp;gt;&amp;#10;- systemStatus: SystemStatus&amp;#10;+ getInstance(): CentralRegistry&amp;#10;+ getConfig(): SystemConfig&amp;#10;+ updateStatus(id, status)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;170\&quot; width=\&quot;280\&quot; x=\&quot;1290\&quot; y=\&quot;290\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;380\&quot; x=\&quot;378\&quot; y=\&quot;496\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-26\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#1a3a5c;\&quot; value=\&quot;KioskCore\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;380\&quot; x=\&quot;381\&quot; y=\&quot;494\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-27\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;- kioskId: String\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;516\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-28\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;- currentMode: KioskMode  [State]\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;534\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-29\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;- operationalStatus: OperationalStatus  [derived]\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;552\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-30\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;- commandHistory: List&amp;lt;Command&amp;gt;  [Command]\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;570\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-31\&quot; parent=\&quot;1\&quot; style=\&quot;line;html=1;strokeColor=#6c8ebf;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;10\&quot; width=\&quot;356\&quot; x=\&quot;393\&quot; y=\&quot;588\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-32\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ handleRequest(request)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;600\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-33\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ executeCommand(cmd: Command)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;618\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-34\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ getAvailableStock(productId): int  [derived]\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;636\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-35\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ switchMode(mode: KioskMode)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;360\&quot; x=\&quot;393\&quot; y=\&quot;654\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-36\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;340\&quot; x=\&quot;890\&quot; y=\&quot;490\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-37\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Abstract Factory&amp;gt;&amp;gt;  KioskFactory\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;340\&quot; x=\&quot;890\&quot; y=\&quot;496\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-38\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ createDispenser(): Dispenser\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;316\&quot; x=\&quot;902\&quot; y=\&quot;522\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-39\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ createVerificationModule(): VerificationModule\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;316\&quot; x=\&quot;902\&quot; y=\&quot;540\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-40\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ createPricingModule(): PricingModule\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;316\&quot; x=\&quot;902\&quot; y=\&quot;558\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-41\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ createInventoryPolicy(): InventoryPolicy\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;316\&quot; x=\&quot;902\&quot; y=\&quot;576\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-42\&quot; parent=\&quot;1\&quot; style=\&quot;line;html=1;strokeColor=#d6b656;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;10\&quot; width=\&quot;316\&quot; x=\&quot;902\&quot; y=\&quot;596\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-43\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;\&quot; value=\&quot;PharmacyKioskFactory\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;90\&quot; x=\&quot;900\&quot; y=\&quot;612\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-44\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;\&quot; value=\&quot;FoodKioskFactory\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;80\&quot; x=\&quot;1002\&quot; y=\&quot;612\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-45\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;\&quot; value=\&quot;EmergencyKioskFactory\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;124\&quot; x=\&quot;1094\&quot; y=\&quot;612\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-46\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;Concrete factories produce compatible&amp;#10;Dispenser + VerificationModule + PricingModule\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;32\&quot; width=\&quot;340\&quot; x=\&quot;890\&quot; y=\&quot;648\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-47\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;280\&quot; x=\&quot;1260\&quot; y=\&quot;490\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-48\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;State Pattern&amp;gt;&amp;gt;  KioskMode\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;280\&quot; x=\&quot;1260\&quot; y=\&quot;496\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-49\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ handlePurchase(ctx)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;256\&quot; x=\&quot;1272\&quot; y=\&quot;520\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-50\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=11;\&quot; value=\&quot;+ handleRefund(ctx)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;16\&quot; width=\&quot;256\&quot; x=\&quot;1272\&quot; y=\&quot;538\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-51\&quot; parent=\&quot;1\&quot; style=\&quot;line;html=1;strokeColor=#d6b656;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;10\&quot; width=\&quot;256\&quot; x=\&quot;1272\&quot; y=\&quot;556\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-52\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;ActiveMode\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;120\&quot; x=\&quot;1270\&quot; y=\&quot;572\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-53\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;PowerSavingMode\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;120\&quot; x=\&quot;1406\&quot; y=\&quot;572\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-54\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;MaintenanceMode\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;120\&quot; x=\&quot;1270\&quot; y=\&quot;612\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-55\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;&amp;lt;font style=&amp;quot;font-size: 9px;&amp;quot;&amp;gt;EmergencyLockdownMode&amp;lt;/font&amp;gt;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;28\&quot; width=\&quot;120\&quot; x=\&quot;1406\&quot; y=\&quot;612\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-56\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;Each mode overrides behaviour for user requests\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;34\&quot; width=\&quot;280\&quot; x=\&quot;1260\&quot; y=\&quot;646\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-57\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;740\&quot; x=\&quot;470\&quot; y=\&quot;730\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-58\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Command Pattern&amp;gt;&amp;gt;  Transaction Command System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;740\&quot; x=\&quot;470\&quot; y=\&quot;736\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-59\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; Command&amp;#10;+ execute()&amp;#10;+ undo()&amp;#10;+ log(): String\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;170\&quot; x=\&quot;486\&quot; y=\&quot;760\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-60\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;PurchaseItemCommand&amp;#10;- productId, userId&amp;#10;- snapshot: StateSnapshot&amp;#10;+ execute()  // atomic&amp;#10;+ undo()  // rollback\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;180\&quot; x=\&quot;676\&quot; y=\&quot;760\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-61\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;RefundCommand&amp;#10;- txId: String&amp;#10;+ execute()&amp;#10;+ undo()\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;160\&quot; x=\&quot;868\&quot; y=\&quot;760\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-62\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;RestockCommand&amp;#10;- productId, qty&amp;#10;+ execute()&amp;#10;+ undo()\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;160\&quot; x=\&quot;1040\&quot; y=\&quot;760\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-63\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;Memento&amp;gt;&amp;gt;  StateSnapshot&amp;#10;- inventoryState: Map&amp;#10;- txState: TxRecord&amp;#10;- timestamp: Instant&amp;#10;+ restore(ctx)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;56\&quot; width=\&quot;200\&quot; x=\&quot;486\&quot; y=\&quot;860\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-64\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=left;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Memento&amp;gt;&amp;gt; Rollback: Snapshot saved before dispense.&amp;#10;Restored on failure → Atomic transaction guarantee.\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;500\&quot; x=\&quot;700\&quot; y=\&quot;860\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-65\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;480\&quot; x=\&quot;450\&quot; y=\&quot;960\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-66\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Strategy Pattern&amp;gt;&amp;gt;  Dynamic Pricing System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;480\&quot; x=\&quot;470\&quot; y=\&quot;966\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-67\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; PricingStrategy&amp;#10;+ computePrice(product): BigDecimal\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;220\&quot; x=\&quot;486\&quot; y=\&quot;994\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-68\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;StandardPricing&amp;#10;basePrice × 1.0\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;120\&quot; x=\&quot;486\&quot; y=\&quot;1056\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-69\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;DiscountedPricing&amp;#10;basePrice × factor\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;140\&quot; x=\&quot;618\&quot; y=\&quot;1056\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-70\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;EmergencyPricing&amp;#10;capped / free pricing\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;150\&quot; x=\&quot;770\&quot; y=\&quot;1056\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-71\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;Switched at runtime by KioskCore.setPricingStrategy()\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;40\&quot; width=\&quot;480\&quot; x=\&quot;470\&quot; y=\&quot;1110\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-72\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;550\&quot; x=\&quot;990\&quot; y=\&quot;960\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-73\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Chain of Responsibility&amp;gt;&amp;gt;  Failure Handling System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;560\&quot; x=\&quot;980\&quot; y=\&quot;966\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-74\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; FailureHandler&amp;#10;- next: FailureHandler&amp;#10;+ handle(failure: HardwareFailure)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; width=\&quot;210\&quot; x=\&quot;996\&quot; y=\&quot;994\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-75\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;AutoRetryHandler&amp;#10;retries up to 3×\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;120\&quot; x=\&quot;996\&quot; y=\&quot;1064\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-76\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;RecalibrationHandler&amp;#10;resets hardware\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;140\&quot; x=\&quot;1130\&quot; y=\&quot;1064\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-77\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;TechnicianAlertHandler&amp;#10;notifies ops team\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;140\&quot; x=\&quot;1284\&quot; y=\&quot;1064\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-78\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-75\&quot; style=\&quot;endArrow=open;endFill=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#d6b656;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-76\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-79\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-76\&quot; style=\&quot;endArrow=open;endFill=0;exitX=1;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#d6b656;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-77\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-80\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;Failure propagates until a handler resolves it\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;36\&quot; width=\&quot;560\&quot; x=\&quot;980\&quot; y=\&quot;1114\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-81\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d6b656;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;200\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-82\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#6d4c00;\&quot; value=\&quot;&amp;lt;&amp;lt;Observer Pattern&amp;gt;&amp;gt;  Event Notification System  (EventBus)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1200\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-83\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;\&quot; value=\&quot;EventBus (Singleton)&amp;#10;+ publish(event: SystemEvent)&amp;#10;+ subscribe(type, handler)&amp;#10;+ unsubscribe(type, handler)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;70\&quot; width=\&quot;230\&quot; x=\&quot;486\&quot; y=\&quot;1232\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-84\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;LowStockEvent&amp;#10;productId, remaining\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;150\&quot; x=\&quot;726\&quot; y=\&quot;1210\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-85\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;HardwareFailureEvent&amp;#10;moduleId, severity\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;160\&quot; x=\&quot;910\&quot; y=\&quot;1226\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-86\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;EmergencyModeActivated&amp;#10;zoneId, priority=HIGH\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;170\&quot; x=\&quot;1082\&quot; y=\&quot;1226\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-87\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;TransactionCompleted&amp;#10;txId, outcome\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;44\&quot; width=\&quot;150\&quot; x=\&quot;1274\&quot; y=\&quot;1226\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-88\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;MaintenanceService\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;32\&quot; width=\&quot;140\&quot; x=\&quot;676\&quot; y=\&quot;1320\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-89\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;SupplyChainSystem\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;32\&quot; width=\&quot;140\&quot; x=\&quot;850\&quot; y=\&quot;1320\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-90\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;CityMonitoringCenter\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;32\&quot; width=\&quot;150\&quot; x=\&quot;1040\&quot; y=\&quot;1320\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-91\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;\&quot; value=\&quot;PersistenceService\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;32\&quot; width=\&quot;140\&quot; x=\&quot;516\&quot; y=\&quot;1340\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-92\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#6d4c00;\&quot; value=\&quot;Events flow through EventBus; subscribers react without direct coupling. EmergencyModeActivated has priority override — instantly switches all kiosks to lockdown.\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;48\&quot; width=\&quot;1070\&quot; x=\&quot;486\&quot; y=\&quot;1352\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-93\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;220\&quot; width=\&quot;470\&quot; x=\&quot;470\&quot; y=\&quot;1430\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-94\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#1a3a5c;\&quot; value=\&quot;Inventory System\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;440\&quot; x=\&quot;470\&quot; y=\&quot;1436\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-95\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; InventoryPolicy&amp;#10;+ canPurchase(productId, qty, ctx): bool&amp;#10;+ onPurchaseComplete(productId, qty)&amp;#10;# enforces: purchase limits, availability\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;70\&quot; width=\&quot;250\&quot; x=\&quot;476\&quot; y=\&quot;1462\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-96\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;InventoryManager&amp;#10;- products: Map&amp;lt;id, Product&amp;gt;&amp;#10;- reserved: Map&amp;lt;id, int&amp;gt;&amp;#10;+ getAvailableStock(id): int  [derived]&amp;#10;+ reserve(id, qty)  [atomic]&amp;#10;+ commit(id, qty)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;90\&quot; width=\&quot;200\&quot; x=\&quot;736\&quot; y=\&quot;1462\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-97\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;\&quot; value=\&quot;EmergencyInventoryPolicy&amp;#10;- maxQty: int (enforced)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;36\&quot; width=\&quot;200\&quot; x=\&quot;476\&quot; y=\&quot;1550\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-98\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;StandardInventoryPolicy\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;36\&quot; width=\&quot;200\&quot; x=\&quot;686\&quot; y=\&quot;1562\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-99\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#1a3a5c;\&quot; value=\&quot;AvailableStock = total − reserved − faulted  [derived attribute]\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;52\&quot; width=\&quot;440\&quot; x=\&quot;468\&quot; y=\&quot;1606\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-100\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;220\&quot; width=\&quot;590\&quot; x=\&quot;950\&quot; y=\&quot;1430\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-101\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#4a007a;\&quot; value=\&quot;Persistence Layer  (JSON / CSV files)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;600\&quot; x=\&quot;940\&quot; y=\&quot;1436\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-102\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9673a6;fontSize=11;\&quot; value=\&quot;inventory.json&amp;#10;Product catalogue + stock levels\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; width=\&quot;170\&quot; x=\&quot;956\&quot; y=\&quot;1462\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-103\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9673a6;fontSize=11;\&quot; value=\&quot;transactions.csv&amp;#10;Transaction history log\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; width=\&quot;170\&quot; x=\&quot;1142\&quot; y=\&quot;1462\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-104\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#f3e8ff;strokeColor=#9673a6;fontSize=11;\&quot; value=\&quot;config.json&amp;#10;Kiosk config + system status\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;50\&quot; width=\&quot;170\&quot; x=\&quot;1328\&quot; y=\&quot;1462\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-105\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;PersistenceService&amp;#10;+ save(key, data)&amp;#10;+ load(key): data&amp;#10;+ append(txRecord)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;70\&quot; width=\&quot;190\&quot; x=\&quot;980\&quot; y=\&quot;1536\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-106\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#4a007a;\&quot; value=\&quot;Invoked on: transaction complete, restock, config change, state snapshot (Memento)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;34\&quot; width=\&quot;600\&quot; x=\&quot;940\&quot; y=\&quot;1606\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-107\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=4;\&quot; value=\&quot;\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;180\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1680\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-108\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontStyle=1;fontSize=13;fontColor=#1a3a5c;\&quot; value=\&quot;Hardware Abstraction Layer\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;20\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1686\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-109\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; Dispenser&amp;#10;+ dispense(productId)&amp;#10;+ selfTest(): bool\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;56\&quot; width=\&quot;170\&quot; x=\&quot;486\&quot; y=\&quot;1712\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-110\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; SensorModule&amp;#10;+ readStatus(): SensorData&amp;#10;+ calibrate()\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;56\&quot; width=\&quot;170\&quot; x=\&quot;676\&quot; y=\&quot;1712\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-111\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;\&quot; value=\&quot;&amp;lt;&amp;lt;interface&amp;gt;&amp;gt; VerificationModule&amp;#10;+ verify(userId, product): bool&amp;#10;# prescription check, age, etc.\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;56\&quot; width=\&quot;220\&quot; x=\&quot;866\&quot; y=\&quot;1712\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-112\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;\&quot; value=\&quot;HardwareController&amp;#10;+ getDispenser(): Dispenser&amp;#10;+ getSensor(): SensorModule&amp;#10;+ isHealthy(): bool  [derived]&amp;#10;  (depends on all module statuses)\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;80\&quot; width=\&quot;220\&quot; x=\&quot;1106\&quot; y=\&quot;1708\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-113\&quot; parent=\&quot;1\&quot; style=\&quot;text;html=1;strokeColor=none;fillColor=none;align=center;fontSize=10;fontStyle=2;fontColor=#1a3a5c;\&quot; value=\&quot;Hardware health feeds KioskCore.operationalStatus [derived]. If critical module unavailable → product marked unavailable.\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;72\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1788\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-114\&quot; parent=\&quot;1\&quot; style=\&quot;rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;align=left;fontSize=11;\&quot; value=\&quot;&amp;lt;b&amp;gt;Concurrency Constraint:&amp;lt;/b&amp;gt; InventoryManager.reserve() uses locking to prevent overselling during concurrent transactions.&amp;#10;PurchaseItemCommand saves StateSnapshot (Memento) before dispense; failure triggers undo() → full rollback.\&quot; vertex=\&quot;1\&quot;&gt;&lt;mxGeometry height=\&quot;56\&quot; width=\&quot;1070\&quot; x=\&quot;470\&quot; y=\&quot;1874\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-115\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-18\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; value=\&quot;delegates to\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-116\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-18\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-24\&quot; value=\&quot;reads config\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-117\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-36\&quot; value=\&quot;creates via\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-118\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-47\&quot; value=\&quot;current state\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;710\&quot; y=\&quot;480\&quot;/&gt;&lt;mxPoint x=\&quot;1400\&quot; y=\&quot;480\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-119\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-57\&quot; value=\&quot;executes\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-120\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-65\&quot; value=\&quot;applies strategy\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;450\&quot; y=\&quot;940\&quot;/&gt;&lt;mxPoint x=\&quot;710\&quot; y=\&quot;940\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-121\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-72\&quot; value=\&quot;triggers on failure\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;660\&quot; y=\&quot;700\&quot;/&gt;&lt;mxPoint x=\&quot;1260\&quot; y=\&quot;700\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-122\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-81\&quot; value=\&quot;publishes events\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;410\&quot; y=\&quot;1300\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-123\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-25\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-107\&quot; value=\&quot;hardware ops\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;380\&quot; y=\&quot;1770\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-124\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-60\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-63\&quot; value=\&quot;saves/restores\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-125\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-83\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-88\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-126\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-83\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-89\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;920\&quot; y=\&quot;1280\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-127\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-83\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-90\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;1115\&quot; y=\&quot;1290\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-128\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-83\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-91\&quot; value=\&quot;\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;580\&quot; y=\&quot;1316\&quot;/&gt;&lt;mxPoint x=\&quot;586\&quot; y=\&quot;1316\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-129\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-57\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-81\&quot; value=\&quot;publishes\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;960\&quot; y=\&quot;1020\&quot;/&gt;&lt;mxPoint x=\&quot;960\&quot; y=\&quot;1020\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-130\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-93\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-81\&quot; value=\&quot;LowStockEvent\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-131\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-105\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-102\&quot; value=\&quot;reads/writes\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-132\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-105\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-103\&quot; value=\&quot;appends\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;1100\&quot; y=\&quot;1524\&quot;/&gt;&lt;mxPoint x=\&quot;1227\&quot; y=\&quot;1524\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-133\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-105\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-104\&quot; value=\&quot;reads/writes\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;/&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-134\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-112\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-72\&quot; value=\&quot;reports failure\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;1590\&quot; y=\&quot;1748\&quot;/&gt;&lt;mxPoint x=\&quot;1590\&quot; y=\&quot;1434\&quot;/&gt;&lt;mxPoint x=\&quot;1560\&quot; y=\&quot;1434\&quot;/&gt;&lt;mxPoint x=\&quot;1560\&quot; y=\&quot;1060\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-135\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-57\&quot; style=\&quot;endArrow=block;endFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#555555;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-93\&quot; value=\&quot;updates stock\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;340\&quot; y=\&quot;830.0000000000002\&quot;/&gt;&lt;mxPoint x=\&quot;340\&quot; y=\&quot;1540\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-136\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-24\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#9673a6;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-100\&quot; value=\&quot;persists config\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;1550\&quot; y=\&quot;920\&quot;/&gt;&lt;mxPoint x=\&quot;1640\&quot; y=\&quot;920\&quot;/&gt;&lt;mxPoint x=\&quot;1640\&quot; y=\&quot;1540\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;mxCell id=\&quot;BwDs4F2nfoAz4QA_kwJA-137\&quot; edge=\&quot;1\&quot; parent=\&quot;1\&quot; source=\&quot;BwDs4F2nfoAz4QA_kwJA-47\&quot; style=\&quot;endArrow=open;endFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#b85450;fontSize=10;\&quot; target=\&quot;BwDs4F2nfoAz4QA_kwJA-81\&quot; value=\&quot;EmergencyModeActivated\&quot;&gt;&lt;mxGeometry relative=\&quot;1\&quot; as=\&quot;geometry\&quot;&gt;&lt;Array as=\&quot;points\&quot;&gt;&lt;mxPoint x=\&quot;1400\&quot; y=\&quot;945\&quot;/&gt;&lt;mxPoint x=\&quot;1580\&quot; y=\&quot;945\&quot;/&gt;&lt;mxPoint x=\&quot;1580\&quot; y=\&quot;1300\&quot;/&gt;&lt;/Array&gt;&lt;/mxGeometry&gt;&lt;/mxCell&gt;&lt;/root&gt;&lt;/mxGraphModel&gt;&lt;/diagram&gt;&lt;/mxfile&gt;&quot;,&quot;toolbar&quot;:&quot;pages zoom layers lightbox&quot;,&quot;page&quot;:0}"></div>
+<script type="text/javascript" src="https://app.diagrams.net/js/viewer-static.min.js"></script>
+    </div>
+  </section>
+
+</div><!-- /.page -->
+
+</body>
+</html>
