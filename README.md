@@ -136,8 +136,8 @@ aura-retail-os/
 ### Setup
 
 ```bash
-git clone https://github.com/<your-org>/aura-retail-os.git
-cd aura-retail-os
+git clone https://github.com/<your-org>/AuraRetailOS-AdaptiveSystem.git
+cd AuraRetailOS-AdaptiveSystem
 ```
 
 ### Run the simulation
