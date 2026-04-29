@@ -160,35 +160,41 @@ git clone https://github.com/<your-org>/AuraRetailOS-AdaptiveSystem.git
 cd AuraRetailOS-AdaptiveSystem
 ```
 
-### Run the simulation
-
+### Run the interactive system
 ```bash
 python main.py
 ```
-
-This executes all demo scenarios sequentially and prints a structured log of system events, state transitions, and transaction outcomes.
+This launches a CLI menu that allows you to manage multiple kiosks, simulate city-wide events, and observe the design patterns in real-time.
 
 ---
 
 ## Simulation Scenarios
 
-### 1. Emergency Mode Activation
-- Kiosk receives `EmergencyModeActivated` event via EventBus
-- State transitions from `ActiveState` → `EmergencyLockdownState`
-- Purchase quantity limits are enforced
-- Emergency pricing policy is applied automatically
+### 1. High Stock Adaptive Pricing (Strategy Pattern)
+1. Select **Scenario: Adaptive Pricing** or create a kiosk with >15 items.
+2. Observe the system automatically recommending `DiscountedPricing`.
+3. Perform a purchase and see the 15% discount applied in the transaction log.
 
-### 2. Hardware Failure Recovery
-- Dispenser fails mid-transaction
-- `FailureHandler` chain fires: retry → recalibrate → technician alert
-- `TransactionSnapshot` (Memento) rolls back inventory and payment state
-- `HardwareFailureEvent` is published to city monitoring subscribers
+### 2. City-Wide Emergency (Observer & State Patterns)
+1. Select **Option 6: Trigger City-Wide Emergency**.
+2. The `CentralRegistry` activates the emergency flag.
+3. The `EventBus` broadcasts a priority `EmergencyModeActivated` signal.
+4. **Result**: All registered kiosks (Pharmacy, Food, etc.) instantly transition to `EMERGENCY_LOCKDOWN` mode.
+5. Try to buy a non-essential item (e.g., Chips) in lockdown; the system will deny it.
 
-### 3. Dynamic Pricing Change
-- Admin triggers a pricing policy switch at runtime
-- Kiosk swaps from `StandardPricing` to `DiscountedPricing` via Strategy pattern
-- All subsequent `purchaseItem()` calls compute prices using the new policy
-- No restart or code change required
+### 3. Hardware Self-Healing (Chain of Responsibility & Memento)
+1. Select **Option 7: Simulate Hardware Failure**.
+2. The system builds a faulty kiosk and attempts a purchase.
+3. A "Motor Stall" is detected. The `FailureHandler` chain attempts recovery:
+   - `AutoRetry` attempts to fix the stall.
+   - `Recalibration` attempts to align the motor.
+   - `TechnicianAlert` is finally triggered.
+4. **Result**: The `PurchaseItemCommand` detects the failure and uses the **Memento** (`StateSnapshot`) to restore inventory perfectly.
+
+### 4. Low Stock Alert (Event-Driven Monitoring)
+1. Perform multiple purchases until a product's stock falls below 3.
+2. Observe the `LowStockEvent` being published to the global monitor.
+3. This demonstrates decoupled communication between the Inventory System and the Monitoring Center.
 
 ---
 
