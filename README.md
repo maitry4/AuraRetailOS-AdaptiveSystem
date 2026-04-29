@@ -66,61 +66,81 @@ All subsystems communicate through an **EventBus** (Observer pattern). No subsys
 ## Project Structure
 
 ```
-aura-retail-os/
+AuraRetailOS-AdaptiveSystem/
+├── commands/
+│   ├── command.py                # Command interface
+│   ├── purchase_item_command.py
+│   ├── refund_command.py
+│   └── restock_command.py
+│
 ├── core/
-│   ├── KioskInterface.py         # Facade — public API for all external interactions
-│   ├── CentralRegistry.py        # Singleton — global config and status
-│   └── EventBus.py               # Observer — event publish/subscribe system
+│   ├── central_registry.py       # Singleton — global config and status
+│   ├── kiosk_core.py             # Core logic for the kiosk
+│   └── kiosk_interface.py        # Facade — public API for all external interactions
 │
-├── kiosk/
-│   ├── factory/
-│   │   ├── KioskFactory.py       # Abstract Factory interface
-│   │   ├── PharmacyKioskFactory.py
-│   │   ├── FoodKioskFactory.py
-│   │   └── EmergencyReliefKioskFactory.py
-│   └── state/
-│       ├── KioskState.py         # State pattern base
-│       ├── ActiveState.py
-│       ├── PowerSavingState.py
-│       ├── MaintenanceState.py
-│       └── EmergencyLockdownState.py
+├── data/
+│   ├── config.json               # Kiosk configuration
+│   ├── inventory.json            # Product catalog and stock counts
+│   └── transactions.csv          # Command execution log
 │
-├── pricing/
-│   ├── PricingPolicy.py          # Strategy interface
-│   ├── StandardPricing.py
-│   ├── DiscountedPricing.py
-│   └── EmergencyPricing.py
+├── events/
+│   ├── emergency_mode_activated.py
+│   ├── event_bus.py              # Observer — event publish/subscribe system
+│   ├── hardware_failure_event.py
+│   ├── low_stock_event.py
+│   └── transaction_completed.py
 │
-├── transaction/
-│   ├── Command.py                # Command interface
-│   ├── PurchaseItemCommand.py
-│   ├── RefundCommand.py
-│   ├── RestockCommand.py
-│   └── TransactionSnapshot.py   # Memento for rollback
+├── external/
+│   ├── city_monitoring_center.py
+│   ├── maintenance_service.py
+│   └── supply_chain_system.py
 │
-├── hardware/
-│   ├── Dispenser.py              # Hardware abstraction interface
-│   ├── SpiralDispenser.py
-│   └── RoboticArmDispenser.py
+├── factory/
+│   ├── emergency_kiosk_factory.py
+│   ├── food_kiosk_factory.py
+│   ├── kiosk_factory.py          # Abstract Factory interface
+│   └── pharmacy_kiosk_factory.py
 │
 ├── failure/
-│   ├── FailureHandler.py         # Chain of Responsibility base
-│   ├── RetryHandler.py
-│   ├── RecalibrationHandler.py
-│   └── TechnicianAlertHandler.py
+│   ├── auto_retry_handler.py
+│   ├── failure_handler.py        # Chain of Responsibility base
+│   ├── recalibration_handler.py
+│   └── technician_alert_handler.py
+│
+├── hardware/
+│   ├── dispenser.py              # Hardware abstraction interface
+│   ├── hardware_controller.py
+│   ├── sensor_module.py
+│   └── verification_module.py
 │
 ├── inventory/
-│   ├── InventoryManager.py
-│   └── Product.py
+│   ├── emergency_inventory_policy.py
+│   ├── inventory_manager.py
+│   ├── inventory_policy.py
+│   └── standard_inventory_policy.py
+│
+├── memento/
+│   └── state_snapshot.py         # Memento for rollback
+│
+├── modes/
+│   ├── active_mode.py
+│   ├── emergency_lockdown_mode.py
+│   ├── kiosk_mode.py             # State pattern base
+│   ├── maintenance_mode.py
+│   └── power_saving_mode.py
 │
 ├── persistence/
-│   ├── inventory.json
-│   ├── transactions.json
-│   └── config.json
+│   └── persistence_service.py
 │
-├── simulation/
-│   └── scenarios.py              # Runnable demo scenarios
+├── pricing/
+│   ├── discounted_pricing.py
+│   ├── emergency_pricing.py
+│   ├── pricing_strategy.py       # Strategy interface
+│   └── standard_pricing.py
 │
+├── main.py                       # Application entry point
+├── index.html                    # Frontend UI
+├── requirements.txt              # Dependencies
 └── README.md
 ```
 
@@ -143,18 +163,10 @@ cd AuraRetailOS-AdaptiveSystem
 ### Run the simulation
 
 ```bash
-python simulation/scenarios.py
+python main.py
 ```
 
-This executes all three demo scenarios sequentially and prints a structured log of system events, state transitions, and transaction outcomes.
-
-### Run a specific scenario
-
-```bash
-python simulation/scenarios.py --scenario emergency
-python simulation/scenarios.py --scenario hardware_failure
-python simulation/scenarios.py --scenario dynamic_pricing
-```
+This executes all demo scenarios sequentially and prints a structured log of system events, state transitions, and transaction outcomes.
 
 ---
 
@@ -182,12 +194,12 @@ python simulation/scenarios.py --scenario dynamic_pricing
 
 ## Persistence
 
-The system reads and writes state to JSON files under `persistence/`:
+The system reads and writes state to files under `data/`:
 
 | File | Contents |
 |---|---|
 | `inventory.json` | Product catalog, stock counts, hardware dependencies |
-| `transactions.json` | Command execution log with timestamps and outcomes |
+| `transactions.csv` | Command execution log with timestamps and outcomes |
 | `config.json` | Kiosk type, active mode, pricing policy, emergency status |
 
 State is loaded on startup and flushed after each successful transaction.
