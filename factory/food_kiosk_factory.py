@@ -13,9 +13,18 @@ class ConveyorDispenser(Dispenser):
     def dispense(self, product_id: str) -> bool:
         print(f"      [ConveyorDispenser] Conveyor releasing food item '{product_id}'...")
         return True
+
+    def wait_for_completion(self) -> bool:
+        print("      [ConveyorDispenser] Waiting for optical sensor confirm...")
+        return True
+
     def self_test(self) -> bool:
         print("      [ConveyorDispenser] Self-test: conveyor motor OK.")
         return True
+
+    @property
+    def model_name(self) -> str:
+        return "FoodVend-2000"
 
 class FoodSensor(SensorModule):
     def read_status(self) -> SensorData:

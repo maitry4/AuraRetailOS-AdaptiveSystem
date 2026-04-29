@@ -175,6 +175,46 @@ def demo_khushi_pal() -> None:
 
 
 # -------------------------------------------------------------
+# KHUSHI ODEDARA'S DEMO — Hardware Failure & Recovery Chain
+# -------------------------------------------------------------
+from hardware.dispenser import Dispenser
+
+class BrokenDispenser(Dispenser):
+    """Mock dispenser that always fails to trigger the recovery chain."""
+    def dispense(self, product_id: str) -> bool:
+        print(f"      [BrokenDispenser] !!! MOTOR STALL while releasing '{product_id}' !!!")
+        return False
+    def wait_for_completion(self) -> bool: return False
+    def self_test(self) -> bool: return True
+    @property
+    def model_name(self) -> str: return "Broken-9000"
+
+class BrokenFoodFactory(FoodKioskFactory):
+    def create_dispenser(self) -> Dispenser:
+        return BrokenDispenser()
+
+def demo_khushi_odedara() -> None:
+    section("KHUSHI ODEDARA'S DEMO — Hardware Failure & Recovery Chain")
+    
+    # Setup a kiosk that is guaranteed to fail
+    kiosk = KioskInterface(
+        kiosk_id="FAULTY-01",
+        factory=BrokenFoodFactory(),
+        initial_stock={"chips": 10}
+    )
+
+    print("\n  [Scenario] Customer attempts a purchase, but the motor stalls.")
+    print("  [Scenario] The FailureHandler chain should attempt recovery.")
+    
+    # Perform purchase
+    success = kiosk.purchase_item("chips", "user_test")
+    
+    print(f"\n  [Verification] Purchase Success: {success}")
+    stock = kiosk._core.inventory_manager.get_available_stock("chips")
+    print(f"  [Verification] Inventory for 'chips': {stock} (Should be 10 due to Memento Rollback)")
+
+
+# -------------------------------------------------------------
 # REGISTRY SUMMARY — shows Singleton aggregated everything
 # -------------------------------------------------------------
 def show_registry_summary() -> None:
@@ -200,6 +240,7 @@ if __name__ == "__main__":
     demo_facade(pharmacy, food, emergency)
     demo_state(food, emergency)
     demo_khushi_pal()
+    demo_khushi_odedara()
     show_registry_summary()
 
     print(f"\n{'-'*55}")

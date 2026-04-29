@@ -14,9 +14,18 @@ class BasicDispenser(Dispenser):
     def dispense(self, product_id: str) -> bool:
         print(f"      [BasicDispenser] Releasing essential item '{product_id}'...")
         return True
+
+    def wait_for_completion(self) -> bool:
+        print("      [BasicDispenser] Immediate drop confirmed.")
+        return True
+
     def self_test(self) -> bool:
         print("      [BasicDispenser] Self-test: basic dispenser OK.")
         return True
+
+    @property
+    def model_name(self) -> str:
+        return "ReliefDrop-1"
 
 class EmergencySensor(SensorModule):
     def read_status(self) -> SensorData:

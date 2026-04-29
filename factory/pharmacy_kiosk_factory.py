@@ -15,10 +15,20 @@ class SealedPharmaDispenser(Dispenser):
     """Sealed, controlled-substance dispenser with tamper detection."""
     def dispense(self, product_id: str) -> bool:
         print(f"      [SealedPharmaDispenser] Dispensing controlled item '{product_id}'...")
+        # Simulating hardware delay (Phase 2)
         return True
+
+    def wait_for_completion(self) -> bool:
+        print("      [SealedPharmaDispenser] Waiting for sensor confirmation...")
+        return True
+
     def self_test(self) -> bool:
         print("      [SealedPharmaDispenser] Self-test: OK (seal intact).")
         return True
+
+    @property
+    def model_name(self) -> str:
+        return "MedSafe-X1"
 
 class PharmaSensor(SensorModule):
     def read_status(self) -> SensorData:

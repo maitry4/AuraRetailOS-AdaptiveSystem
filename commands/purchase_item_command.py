@@ -59,6 +59,20 @@ class PurchaseItemCommand(Command):
         print(f"  [Command] Memento saved. Attempting dispense...")
         dispensed = self.ctx.hardware_controller.get_dispenser().dispense(self.product_id)
         
+        if not dispensed:
+            # Phase 3: Initiate recovery chain (Khushi Odedara's task)
+            print(f"  [Command] Initial dispense failed. Initiating recovery chain...")
+            # Simulate a specific error code for the demo
+            error_code = "TRANSIENT_MOTOR_STALL" 
+            resolved = self.ctx.hardware_controller.report_failure(
+                self.ctx.kiosk_id, "Dispenser", error_code
+            )
+            if resolved:
+                print("  [Command] Recovery chain resolved the issue. Proceeding to commit.")
+                dispensed = True
+            else:
+                print("  [Command] Recovery chain failed to resolve the issue.")
+
         if dispensed:
             # 8. Success: Commit changes
             self.ctx.inventory_manager.commit(self.product_id, 1)
@@ -67,7 +81,7 @@ class PurchaseItemCommand(Command):
             return True
         else:
             # 9. Failure: Rollback using Memento
-            print(f"  [Command] Hardware failure during dispense! Rolling back...")
+            print(f"  [Command] Hardware failure could not be recovered. Rolling back...")
             self.undo()
             self.status = "FAILED: HARDWARE_ERROR"
             return False
