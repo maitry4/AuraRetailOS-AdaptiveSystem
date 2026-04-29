@@ -20,6 +20,8 @@ from core.central_registry import CentralRegistry
 from factory.pharmacy_kiosk_factory import PharmacyKioskFactory
 from factory.food_kiosk_factory import FoodKioskFactory
 from factory.emergency_kiosk_factory import EmergencyKioskFactory
+from events.event_bus import EventBus
+from events.emergency_mode_activated import EmergencyModeActivated
 
 
 DIVIDER = "\n" + "=" * 55
@@ -149,6 +151,30 @@ def demo_state(food: KioskInterface, emergency: KioskInterface) -> None:
 
 
 # -------------------------------------------------------------
+# KHUSHI PAL'S DEMO — Event-Driven City-Wide Emergency
+# -------------------------------------------------------------
+def demo_khushi_pal() -> None:
+    section("KHUSHI PAL'S DEMO — Event-Driven City-Wide Emergency")
+    
+    registry = CentralRegistry.get_instance()
+    bus = EventBus.get_instance()
+
+    print("\n  [Scenario] A city-wide emergency is declared by the Monitoring Center.")
+    print("  [Scenario] This should trigger ALL kiosks to enter Lockdown Mode via EventBus.")
+    
+    # 1. Update global registry status
+    registry.activate_emergency()
+    
+    # 2. Publish high-priority event
+    event = EmergencyModeActivated(region="City Center")
+    bus.publish(event)
+    
+    print("\n  [Verification] Checking status of all kiosks after EventBus broadcast:")
+    for kid, status in registry.list_kiosks().items():
+        print(f"    - {kid:15s}  ->  {status}")
+
+
+# -------------------------------------------------------------
 # REGISTRY SUMMARY — shows Singleton aggregated everything
 # -------------------------------------------------------------
 def show_registry_summary() -> None:
@@ -173,6 +199,7 @@ if __name__ == "__main__":
     pharmacy, food, emergency = build_kiosks()
     demo_facade(pharmacy, food, emergency)
     demo_state(food, emergency)
+    demo_khushi_pal()
     show_registry_summary()
 
     print(f"\n{'-'*55}")

@@ -42,6 +42,9 @@ class KioskCore:
         self._persistence = PersistenceService()
         self._event_bus = EventBus.get_instance()
 
+        # Phase 3: Subscribe to critical alerts (Khushi Pal's task)
+        self._event_bus.subscribe("EmergencyModeActivated", self._handle_emergency_alert, priority=0)
+
     # -- State Pattern: mode access & switching -------------------------------
 
     @property
@@ -62,6 +65,12 @@ class KioskCore:
     def set_pricing_strategy(self, strategy: PricingStrategy) -> None:
         print(f"  [KioskCore '{self.kiosk_id}'] Pricing Strategy switch: {self._pricing_strategy.strategy_name} -> {strategy.strategy_name}")
         self._pricing_strategy = strategy
+
+    def _handle_emergency_alert(self, event) -> None:
+        """Khushi Pal's logic: Automatically switch to lockdown mode on emergency event."""
+        from modes.emergency_lockdown_mode import EmergencyLockdownMode
+        print(f"  [KioskCore '{self.kiosk_id}'] REACTING TO EVENT: {event}")
+        self.switch_mode(EmergencyLockdownMode())
 
     # -- Command Pattern: execution & history ----------------------------------
 

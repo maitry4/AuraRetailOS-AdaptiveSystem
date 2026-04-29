@@ -23,6 +23,7 @@ class SystemStatus:
     online_kiosks: int = 0
     emergency_active: bool = False
     total_transactions: int = 0
+    alerts: list = field(default_factory=list)
 
 class CentralRegistry:
     """
@@ -81,7 +82,17 @@ class CentralRegistry:
 
     def activate_emergency(self) -> None:
         self._status.emergency_active = True
+        self.add_alert("SYSTEM", "Emergency Mode Activated system-wide.")
         print("  [CentralRegistry] !  EMERGENCY MODE ACTIVATED system-wide.")
+
+    def add_alert(self, source: str, message: str) -> None:
+        with self._lock:
+            self._status.alerts.append(f"[{source}] {message}")
+            if len(self._status.alerts) > 10:
+                self._status.alerts.pop(0)
+
+    def get_alerts(self) -> list:
+        return self._status.alerts
 
     def increment_transactions(self) -> None:
         with self._lock:
@@ -90,11 +101,13 @@ class CentralRegistry:
     def summary(self) -> str:
         cfg = self._config
         st = self._status
+        alert_summary = f"Recent Alerts: {len(st.alerts)}"
         return (
             f"\n{'='*55}\n"
             f"  {cfg.system_name} v{cfg.version}\n"
             f"  Online kiosks    : {st.online_kiosks}\n"
             f"  Total tx         : {st.total_transactions}\n"
             f"  Emergency active : {st.emergency_active}\n"
+            f"  {alert_summary}\n"
             f"{'='*55}"
         )
