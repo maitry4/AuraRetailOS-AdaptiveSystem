@@ -1,18 +1,17 @@
 """
-main.py — Aura Retail OS  |  Patterns 1–4 Demo
-================================================
-Demonstrates all four patterns in a single terminal run:
+main.py - Aura Retail OS | Interactive System Shell
+===================================================
+A fully interactive console for managing the smart retail ecosystem.
+Demonstrates 9 design patterns across 4 development phases.
 
-  Pattern 1 — Facade        : KioskInterface is the only external entry point
-  Pattern 2 — Singleton     : CentralRegistry shared across all kiosks
-  Pattern 3 — Abstract Factory: Three kiosk types built from three factories
-  Pattern 4 — State         : Runtime mode switching changes behaviour
-
-Run:  python main.py
+Implemented Path: Path A (Transactional Integrity & Dynamic Pricing)
 """
 
-import sys
 import os
+import sys
+from typing import Dict
+
+# Ensure local imports work
 sys.path.insert(0, os.path.dirname(__file__))
 
 from core.kiosk_interface import KioskInterface
@@ -22,227 +21,173 @@ from factory.food_kiosk_factory import FoodKioskFactory
 from factory.emergency_kiosk_factory import EmergencyKioskFactory
 from events.event_bus import EventBus
 from events.emergency_mode_activated import EmergencyModeActivated
+from pricing.discounted_pricing import DiscountedPricing
+from pricing.emergency_pricing import EmergencyPricing
 
-
-DIVIDER = "\n" + "=" * 55
-
-def section(title: str) -> None:
-    print(f"{DIVIDER}\n  {title}{DIVIDER}")
-
-
-# -------------------------------------------------------------
-# PATTERN 2 DEMO — Singleton: same registry instance everywhere
-# -------------------------------------------------------------
-def demo_singleton() -> None:
-    section("PATTERN 2 — Singleton: CentralRegistry")
-
-    r1 = CentralRegistry.get_instance()
-    r2 = CentralRegistry.get_instance()
-    # Note: CentralRegistry() constructor is internal/private in a strict singleton, 
-    # but here we allow it to return the instance for demo purposes.
-    r3 = CentralRegistry() 
-
-    print(f"\n  r1 is r2 : {r1 is r2}")   # True
-    print(f"  r2 is r3 : {r2 is r3}")   # True
-    print(f"  id(r1)   : {id(r1)}")
-    print(f"  id(r2)   : {id(r2)}")
-    print(f"\n  System name : {r1.get_config().system_name}")
-    print(f"  Version     : {r1.get_config().version}")
-
-
-# -------------------------------------------------------------
-# PATTERN 3 DEMO — Abstract Factory: 3 kiosk types, 3 factories
-# -------------------------------------------------------------
-def build_kiosks() -> tuple:
-    section("PATTERN 3 — Abstract Factory: Building Kiosks")
-
-    pharmacy_kiosk = KioskInterface(
-        kiosk_id="PHARMA-01",
-        factory=PharmacyKioskFactory(),
-        initial_stock={"amoxicillin": 10, "ibuprofen": 20},
-    )
-
-    food_kiosk = KioskInterface(
-        kiosk_id="FOOD-01",
-        factory=FoodKioskFactory(),
-        initial_stock={"sandwich": 15, "water": 30, "chips": 25},
-    )
-
-    emergency_kiosk = KioskInterface(
-        kiosk_id="EMERG-01",
-        factory=EmergencyKioskFactory(),
-        initial_stock={"water": 50, "first_aid_kit": 20, "emergency_ration": 30},
-    )
-
-    return pharmacy_kiosk, food_kiosk, emergency_kiosk
-
-
-# -------------------------------------------------------------
-# PATTERN 1 DEMO — Facade: external callers use only 4 methods
-# -------------------------------------------------------------
-def demo_facade(pharmacy: KioskInterface, food: KioskInterface, emergency: KioskInterface) -> None:
-    section("PATTERN 1 — Facade: KioskInterface as sole entry point")
-
-    print("\n  > PHARMACY KIOSK — valid prescription purchase")
-    pharmacy.purchase_item("amoxicillin", "user_alice")
-
-    print("\n  > PHARMACY KIOSK — invalid prescription (should be denied)")
-    pharmacy.purchase_item("amoxicillin", "user_charlie")
-
-    print("\n  > FOOD KIOSK — normal purchase")
-    food.purchase_item("sandwich", "user_bob")
-
-    print("\n  > FOOD KIOSK — refund")
-    food.refund_transaction("TX-9901")
-
-    print("\n  > EMERGENCY KIOSK — essential item purchase")
-    emergency.purchase_item("water", "user_dave")
-
-    print("\n  > FOOD KIOSK — diagnostics via Facade")
-    food.run_diagnostics()
-
-    print("\n  > FOOD KIOSK — restock via Facade")
-    food.restock_inventory("sandwich", 10)
-
-
-# -------------------------------------------------------------
-# PATTERN 4 DEMO — State: runtime mode changes alter behaviour
-# -------------------------------------------------------------
-def demo_state(food: KioskInterface, emergency: KioskInterface) -> None:
-    section("PATTERN 4 — State: Mode Switching Changes Behaviour")
-
-    # --- Maintenance Mode ---
-    print("\n  -- Switching Food kiosk to MAINTENANCE --")
-    food.set_maintenance_mode()
-
-    print("\n  > Purchase attempt while in MAINTENANCE (should be blocked):")
-    food.purchase_item("chips", "user_eve")
-
-    print("\n  > Restock IS allowed in MAINTENANCE:")
-    food.restock_inventory("chips", 50)
-
-    print("\n  > Diagnostics IS allowed in MAINTENANCE:")
-    food.run_diagnostics()
-
-    # --- Back to Active ---
-    print("\n  -- Restoring Food kiosk to ACTIVE --")
-    food.set_active_mode()
-    print("\n  > Purchase now works again:")
-    food.purchase_item("chips", "user_eve")
-
-    # --- Power Saving -> auto-wake ---
-    print("\n  -- Switching Food kiosk to POWER_SAVING --")
-    food.set_power_saving_mode()
-    print("\n  > Purchase triggers auto-wake to ActiveMode:")
-    food.purchase_item("water", "user_frank")
-
-    # --- Emergency Lockdown ---
-    print("\n  -- Activating EMERGENCY LOCKDOWN on Emergency kiosk --")
-    emergency.activate_emergency_lockdown()
-
-    print("\n  > Non-essential item blocked in lockdown:")
-    emergency.purchase_item("chips", "user_grace")
-
-    print("\n  > Essential item allowed (with quantity cap):")
-    emergency.purchase_item("first_aid_kit", "user_grace")
-
-    print("\n  > Refund blocked in lockdown:")
-    emergency.refund_transaction("TX-0042")
-
-
-# -------------------------------------------------------------
-# KHUSHI PAL'S DEMO — Event-Driven City-Wide Emergency
-# -------------------------------------------------------------
-def demo_khushi_pal() -> None:
-    section("KHUSHI PAL'S DEMO — Event-Driven City-Wide Emergency")
-    
-    registry = CentralRegistry.get_instance()
-    bus = EventBus.get_instance()
-
-    print("\n  [Scenario] A city-wide emergency is declared by the Monitoring Center.")
-    print("  [Scenario] This should trigger ALL kiosks to enter Lockdown Mode via EventBus.")
-    
-    # 1. Update global registry status
-    registry.activate_emergency()
-    
-    # 2. Publish high-priority event
-    event = EmergencyModeActivated(region="City Center")
-    bus.publish(event)
-    
-    print("\n  [Verification] Checking status of all kiosks after EventBus broadcast:")
-    for kid, status in registry.list_kiosks().items():
-        print(f"    - {kid:15s}  ->  {status}")
-
-
-# -------------------------------------------------------------
-# KHUSHI ODEDARA'S DEMO — Hardware Failure & Recovery Chain
-# -------------------------------------------------------------
+# Mock classes for hardware failure demo
 from hardware.dispenser import Dispenser
 
 class BrokenDispenser(Dispenser):
-    """Mock dispenser that always fails to trigger the recovery chain."""
     def dispense(self, product_id: str) -> bool:
-        print(f"      [BrokenDispenser] !!! MOTOR STALL while releasing '{product_id}' !!!")
+        print(f"\n  [HW_ERROR] !!! MOTOR STALL while releasing '{product_id}' !!!")
         return False
     def wait_for_completion(self) -> bool: return False
     def self_test(self) -> bool: return True
     @property
-    def model_name(self) -> str: return "Broken-9000"
+    def model_name(self) -> str: return "Faulty-X"
 
 class BrokenFoodFactory(FoodKioskFactory):
-    def create_dispenser(self) -> Dispenser:
-        return BrokenDispenser()
-
-def demo_khushi_odedara() -> None:
-    section("KHUSHI ODEDARA'S DEMO — Hardware Failure & Recovery Chain")
-    
-    # Setup a kiosk that is guaranteed to fail
-    kiosk = KioskInterface(
-        kiosk_id="FAULTY-01",
-        factory=BrokenFoodFactory(),
-        initial_stock={"chips": 10}
-    )
-
-    print("\n  [Scenario] Customer attempts a purchase, but the motor stalls.")
-    print("  [Scenario] The FailureHandler chain should attempt recovery.")
-    
-    # Perform purchase
-    success = kiosk.purchase_item("chips", "user_test")
-    
-    print(f"\n  [Verification] Purchase Success: {success}")
-    stock = kiosk._core.inventory_manager.get_available_stock("chips")
-    print(f"  [Verification] Inventory for 'chips': {stock} (Should be 10 due to Memento Rollback)")
+    def create_dispenser(self) -> Dispenser: return BrokenDispenser()
 
 
-# -------------------------------------------------------------
-# REGISTRY SUMMARY — shows Singleton aggregated everything
-# -------------------------------------------------------------
-def show_registry_summary() -> None:
-    section("PATTERN 2 — Singleton Summary: CentralRegistry State")
-    registry = CentralRegistry.get_instance()
-    print(registry.summary())
-    print("\n  Registered kiosks:")
-    for kid, status in registry.list_kiosks().items():
-        print(f"    - {kid:15s}  ->  {status}")
+class AuraShell:
+    def __init__(self):
+        self.registry = CentralRegistry.get_instance()
+        self.bus = EventBus.get_instance()
+        self.kiosks: Dict[str, KioskInterface] = {}
+        self.current_kiosk: KioskInterface = None
+        self._setup_subscribers()
+        self._bootstrap()
 
+    def _setup_subscribers(self):
+        """Setup global monitoring observers."""
+        self.bus.subscribe("TransactionCompleted", lambda e: print(f"\n  [Global Monitor] Tx Success: {e.product_id} at {e.kiosk_id}"))
+        self.bus.subscribe("LowStockEvent", lambda e: print(f"\n  [Global Monitor] WARNING: Low stock for {e.product_id} at {e.kiosk_id} ({e.current_stock} left)"))
+        self.bus.subscribe("HardwareFailureEvent", lambda e: print(f"\n  [Global Monitor] ALERT: Hardware failure at {e.kiosk_id}! Component: {e.component}"))
 
-# -------------------------------------------------------------
-# ENTRY POINT
-# -------------------------------------------------------------
+    def _bootstrap(self):
+        """Initialize default kiosks."""
+        print("\n[System] Bootstrapping Aura Retail OS...")
+        self.kiosks["PHARMA-01"] = KioskInterface("PHARMA-01", PharmacyKioskFactory(), {"amoxicillin": 10, "ibuprofen": 5})
+        self.kiosks["FOOD-01"] = KioskInterface("FOOD-01", FoodKioskFactory(), {"sandwich": 20, "water": 15})
+        self.kiosks["EMERG-01"] = KioskInterface("EMERG-01", EmergencyKioskFactory(), {"water": 50, "first_aid": 10})
+        self.current_kiosk = self.kiosks["FOOD-01"]
+
+    def header(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("="*60)
+        print("             AURA RETAIL OS - INTERACTIVE SHELL")
+        print("="*60)
+        print(f"  Current Kiosk: {self.current_kiosk.kiosk_id} [{self.current_kiosk.status}]")
+        print(f"  System Mode  : {'EMERGENCY' if self.registry.get_status().emergency_active else 'NORMAL'}")
+        print("-" * 60)
+
+    def run(self):
+        while True:
+            self.header()
+            print("  1. Select Kiosk")
+            print("  2. View Current Kiosk Inventory")
+            print("  3. View Verification Info (Users)")
+            print("  4. Purchase Item")
+            print("  5. Restock Item")
+            print("  6. View System Summary (CentralRegistry)")
+            print("  7. Switch Kiosk Mode (State Pattern)")
+            print("  8. Trigger City-Wide Emergency (EventBus)")
+            print("  9. Simulate Hardware Failure (Chain of Resp/Memento)")
+            print("  0. Exit")
+            print("-" * 60)
+            
+            choice = input("Select an option: ")
+
+            if choice == "1": self._select_kiosk()
+            elif choice == "2": self._view_inventory()
+            elif choice == "3": self._view_users()
+            elif choice == "4": self._do_purchase()
+            elif choice == "5": self._do_restock()
+            elif choice == "6": self._view_summary()
+            elif choice == "7": self._switch_mode()
+            elif choice == "8": self._trigger_emergency()
+            elif choice == "9": self._simulate_failure()
+            elif choice == "0": break
+            else: input("\nInvalid choice. Press Enter to continue...")
+
+    def _select_kiosk(self):
+        print("\nAvailable Kiosks:")
+        for kid in self.kiosks:
+            print(f"  - {kid}")
+        kid = input("\nEnter Kiosk ID: ").upper()
+        if kid in self.kiosks:
+            self.current_kiosk = self.kiosks[kid]
+        else:
+            input("Kiosk not found. Press Enter...")
+
+    def _view_inventory(self):
+        print(f"\nInventory for {self.current_kiosk.kiosk_id}:")
+        report = self.current_kiosk.get_inventory_report()
+        if not report:
+            print("  (Empty)")
+        for item in report:
+            print(f"  - {item['id']:15s} | Stock: {item['stock']:2d} | Est. Price: ${item['price']:.2f}")
+        input("\nPress Enter to continue...")
+
+    def _view_users(self):
+        print(f"\nVerification Policy for {self.current_kiosk.kiosk_id}:")
+        v_info = self.current_kiosk.get_verification_info()
+        print(f"  Policy: {v_info['policy']}")
+        if v_info["users"]:
+            print("  Known Registered Users & Requirements:")
+            for user in v_info["users"]:
+                print(f"  - {user}")
+        input("\nPress Enter to continue...")
+
+    def _do_purchase(self):
+        print(f"\n--- {self.current_kiosk.kiosk_id} Purchase ---")
+        report = self.current_kiosk.get_inventory_report()
+        print("Available Items:")
+        valid_ids = []
+        for item in report:
+            print(f"  - {item['id']:15s} (Stock: {item['stock']})")
+            valid_ids.append(item['id'])
+            
+        pid = input("\nEnter Product ID to buy: ")
+        if pid not in valid_ids:
+            print("  [Error] Product not found in this kiosk.")
+            input("\nPress Enter to continue...")
+            return
+
+        uid = input("Enter User ID: ")
+        self.current_kiosk.purchase_item(pid, uid)
+        input("\nPress Enter to continue...")
+
+    def _do_restock(self):
+        pid = input("\nEnter Product ID: ")
+        qty = int(input("Enter Quantity: "))
+        self.current_kiosk.restock_inventory(pid, qty)
+        input("\nPress Enter to continue...")
+
+    def _view_summary(self):
+        print(self.registry.summary())
+        input("\nPress Enter to continue...")
+
+    def _switch_mode(self):
+        print("\nModes:")
+        print("  1. Active")
+        print("  2. Maintenance")
+        print("  3. Power Saving")
+        print("  4. Emergency Lockdown")
+        m = input("\nSelect Mode: ")
+        if m == "1": self.current_kiosk.set_active_mode()
+        elif m == "2": self.current_kiosk.set_maintenance_mode()
+        elif m == "3": self.current_kiosk.set_power_saving_mode()
+        elif m == "4": self.current_kiosk.activate_emergency_lockdown()
+        input("\nPress Enter to continue...")
+
+    def _trigger_emergency(self):
+        print("\n!!! DECLARING CITY-WIDE EMERGENCY !!!")
+        self.registry.activate_emergency()
+        self.bus.publish(EmergencyModeActivated(region="Global"))
+        input("\nAll kiosks have transitioned. Press Enter to continue...")
+
+    def _simulate_failure(self):
+        print("\nInitializing Faulty Kiosk (FAULTY-01)...")
+        faulty = KioskInterface("FAULTY-01", BrokenFoodFactory(), {"chips": 5})
+        self.kiosks["FAULTY-01"] = faulty
+        self.current_kiosk = faulty
+        print("\n[System] Current kiosk switched to FAULTY-01.")
+        print("[System] Attempting a purchase to trigger failure chain...")
+        faulty.purchase_item("chips", "user_test")
+        input("\nFailure handled. Press Enter to continue...")
+
 if __name__ == "__main__":
-    print("\n" + "#" * 55)
-    print("  AURA RETAIL OS  -  Simulation Run")
-    print("  Facade . Singleton . Abstract Factory . State")
-    print("#" * 55)
-
-    demo_singleton()
-    pharmacy, food, emergency = build_kiosks()
-    demo_facade(pharmacy, food, emergency)
-    demo_state(food, emergency)
-    demo_khushi_pal()
-    demo_khushi_odedara()
-    show_registry_summary()
-
-    print(f"\n{'-'*55}")
-    print("  Demo complete.")
-    print("-" * 55 + "\n")
+    shell = AuraShell()
+    shell.run()

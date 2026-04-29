@@ -127,7 +127,42 @@ class KioskInterface:
         self._core.switch_mode(EmergencyLockdownMode())
         CentralRegistry.get_instance().activate_emergency()
 
-    # -- Status ---------------------------------------------------------------
+    # -- Status & Reporting ---------------------------------------------------
+    
+    def get_inventory_report(self) -> list:
+        """
+        Returns a list of dicts describing inventory with adaptive prices.
+        Hides InventoryManager and PricingStrategy from the UI.
+        """
+        stock = self._core.inventory_manager.list_stock()
+        report = []
+        for pid, qty in stock.items():
+            # Assume 10.0 base price for demo
+            price = self._core.pricing_strategy.compute_price(pid, 10.0)
+            report.append({"id": pid, "stock": qty, "price": float(price)})
+        return report
+
+    def get_verification_info(self) -> dict:
+        """
+        Returns kiosk-specific verification policy details.
+        Hides VerificationModule details from the UI.
+        """
+        # Logic moved from UI to Facade/Subsystem
+        v_module = self._core.hardware_controller.get_verification()
+        
+        info = {
+            "policy": "Open (No Verification)",
+            "users": []
+        }
+
+        # Introspect the verification module (could be formalised with an interface method)
+        if hasattr(v_module, "VALID_PRESCRIPTIONS"):
+            info["policy"] = "Restricted (Prescription Required)"
+            info["users"] = list(v_module.VALID_PRESCRIPTIONS)
+        elif v_module.__class__.__name__ == "AgeVerifier":
+            info["policy"] = "Semi-Restricted (Age Verification)"
+
+        return info
 
     @property
     def status(self) -> str:
