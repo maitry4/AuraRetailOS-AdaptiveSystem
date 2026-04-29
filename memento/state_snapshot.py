@@ -11,5 +11,8 @@ class StateSnapshot:
         self.reservation_qty = reservation_qty
         self.timestamp = datetime.datetime.now()
 
+    def __repr__(self):
+        return f"Snapshot[{self.product_id}] Stock:{self.stock_level} Reserved:{self.reservation_qty}"
+
     def __str__(self):
-        return f"Snapshot[{self.product_id}] Stock:{self.stock_level} Reserved:{self.reservation_qty} @ {self.timestamp.strftime('%H:%M:%S')}"
+        return f"Snapshot[{self.product_id}] Pre-Stock:{self.stock_level} Reserved:{self.reservation_qty}"

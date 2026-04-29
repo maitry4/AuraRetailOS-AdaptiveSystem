@@ -56,7 +56,7 @@ class PurchaseItemCommand(Command):
             return False
 
         # 7. Hardware Dispense (Risky Operation)
-        print(f"  [Command] Memento saved. Attempting dispense...")
+        print(f"  [Command] Memento saved: {self._snapshot}. Attempting dispense...")
         dispensed = self.ctx.hardware_controller.get_dispenser().dispense(self.product_id)
         
         if not dispensed:
@@ -68,10 +68,10 @@ class PurchaseItemCommand(Command):
                 self.ctx.kiosk_id, "Dispenser", error_code
             )
             if resolved:
-                print("  [Command] Recovery chain resolved the issue. Proceeding to commit.")
+                print(f"  [Command] Recovery chain resolved the issue. Proceeding to commit.")
                 dispensed = True
             else:
-                print("  [Command] Recovery chain failed to resolve the issue.")
+                print(f"  [Command] Recovery chain failed to resolve the issue.")
 
         if dispensed:
             # 8. Success: Commit changes
@@ -88,8 +88,10 @@ class PurchaseItemCommand(Command):
 
     def undo(self) -> bool:
         if self._snapshot:
-            print(f"  [Command] Undoing changes using Memento: {self._snapshot}")
+            print(f"  [Memento] RESTORING STATE from: {self._snapshot}")
+            # Logic: We are releasing the reservation that failed to dispense
             self.ctx.inventory_manager.release_reservation(self.product_id, self._snapshot.reservation_qty)
+            print(f"  [Memento] Rollback complete. Stock is back to available: {self.ctx.inventory_manager.get_available_stock(self.product_id)}")
             return True
         return False
 

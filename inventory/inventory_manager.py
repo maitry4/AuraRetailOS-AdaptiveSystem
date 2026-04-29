@@ -14,7 +14,7 @@ class InventoryManager:
         self._reserved: Dict[str, int] = {}
         self._faulted: Dict[str, int] = {}
         self._storage_path = storage_path
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         
         # Phase 4: Bootstrap (Hardik's task)
         if os.path.exists(self._storage_path):
@@ -25,13 +25,17 @@ class InventoryManager:
             self._products[product_id] = self._products.get(product_id, 0) + qty
 
     def get_available_stock(self, product_id: str) -> int:
-        total = self._products.get(product_id, 0)
-        reserved = self._reserved.get(product_id, 0)
-        faulted = self._faulted.get(product_id, 0)
-        return max(0, total - reserved - faulted)
+        with self._lock:
+            total = self._products.get(product_id, 0)
+            reserved = self._reserved.get(product_id, 0)
+            faulted = self._faulted.get(product_id, 0)
+            return max(0, total - reserved - faulted)
 
     def reserve(self, product_id: str, qty: int) -> bool:
         with self._lock:
+            # Artificial delay to demonstrate concurrency protection (Locks/Semaphores)
+            import time
+            time.sleep(0.1) 
             if self.get_available_stock(product_id) >= qty:
                 self._reserved[product_id] = self._reserved.get(product_id, 0) + qty
                 return True

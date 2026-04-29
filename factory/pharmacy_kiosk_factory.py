@@ -14,8 +14,10 @@ from inventory.standard_inventory_policy import StandardInventoryPolicy
 class SealedPharmaDispenser(Dispenser):
     """Sealed, controlled-substance dispenser with tamper detection."""
     def dispense(self, product_id: str) -> bool:
-        print(f"      [SealedPharmaDispenser] Dispensing controlled item '{product_id}'...")
-        # Simulating hardware delay (Phase 2)
+        print(f"      [SealedPharmaDispenser] Motor spinning... (Simulating hardware delay)")
+        import time
+        time.sleep(1.2) # Realistic hardware delay
+        print(f"      [SealedPharmaDispenser] Releasing item '{product_id}'...")
         return True
 
     def wait_for_completion(self) -> bool:

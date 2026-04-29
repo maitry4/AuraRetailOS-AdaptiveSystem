@@ -106,6 +106,24 @@ class KioskInterface:
         print(f"[Facade] Result: {'SUCCESS OK' if result else 'FAILED FAILED'}")
         return result
 
+    def set_pricing_strategy(self, strategy_name: str) -> None:
+        """Dynamically switch pricing policy at runtime (Strategy Pattern)."""
+        from pricing.standard_pricing import StandardPricing
+        from pricing.discounted_pricing import DiscountedPricing
+        from pricing.emergency_pricing import EmergencyPricing
+        
+        strategies = {
+            "STANDARD": StandardPricing(),
+            "DISCOUNTED": DiscountedPricing(),
+            "EMERGENCY": EmergencyPricing()
+        }
+        
+        if strategy_name in strategies:
+            print(f"\n[Facade] Switching '{self._core.kiosk_id}' to {strategy_name} pricing.")
+            self._core.set_pricing_strategy(strategies[strategy_name])
+        else:
+            print(f"[Facade] Error: Unknown strategy '{strategy_name}'")
+
     # -- Mode-switching helpers (operator use only, still via Facade) ---------
 
     def set_maintenance_mode(self) -> None:

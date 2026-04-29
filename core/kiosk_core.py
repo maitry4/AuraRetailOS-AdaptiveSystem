@@ -43,7 +43,7 @@ class KioskCore:
         self._event_bus = EventBus.get_instance()
 
         # Phase 3: Subscribe to critical alerts (Khushi Pal's task)
-        self._event_bus.subscribe("EmergencyModeActivated", self._handle_emergency_alert, priority=0)
+        self._event_bus.subscribe("EmergencyModeActivated", self._handle_emergency_alert)
 
     # -- State Pattern: mode access & switching -------------------------------
 
