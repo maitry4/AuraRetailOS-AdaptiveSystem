@@ -1,9 +1,7 @@
-"""
-modes/emergency_lockdown_mode.py
-EMERGENCY (Priority Override) — Most ops disabled; essential items only with quantity cap.
-EmergencyLockdownMode overrides all other states immediately on EmergencyModeActivated event.
-"""
 from modes.kiosk_mode import KioskMode
+from commands.purchase_item_command import PurchaseItemCommand
+from commands.refund_command import RefundCommand
+from commands.restock_command import RestockCommand
 
 class EmergencyLockdownMode(KioskMode):
     ESSENTIAL_PRODUCTS = {"water", "first_aid_kit", "emergency_ration"}
@@ -13,35 +11,24 @@ class EmergencyLockdownMode(KioskMode):
         return "EMERGENCY_LOCKDOWN"
 
     def handle_purchase(self, ctx, product_id: str, user_id: str) -> bool:
-        print(f"  [EmergencyLockdown] Purchase request for '{product_id}'.")
+        print(f"  [EmergencyLockdown] Checking essential item status for '{product_id}'...")
         if product_id not in self.ESSENTIAL_PRODUCTS:
-            print(f"  [EmergencyLockdown] ✗ Non-essential product denied during emergency.")
+            print(f"  [EmergencyLockdown] X Non-essential product denied during emergency.")
             return False
-        available = ctx.inventory_manager.get_available_stock(product_id)
-        policy_ctx = {"available_stock": available}
-        if not ctx.inventory_policy.can_purchase(product_id, 1, policy_ctx):
-            return False
-        reserved = ctx.inventory_manager.reserve(product_id, 1)
-        if not reserved:
-            print("  [EmergencyLockdown] Insufficient stock.")
-            return False
-        dispensed = ctx.hardware_controller.get_dispenser().dispense(product_id)
-        if dispensed:
-            ctx.inventory_manager.commit(product_id, 1)
-            ctx.inventory_policy.on_purchase_complete(product_id, 1)
-            print(f"  [EmergencyLockdown] ✓ Essential item dispensed.")
-            return True
-        ctx.inventory_manager.release_reservation(product_id, 1)
-        return False
+        
+        print(f"  [EmergencyLockdown] Creating PurchaseItemCommand (Essential Item)...")
+        # In emergency mode, we might use a different pricing strategy (handled by Strategy pattern later)
+        cmd = PurchaseItemCommand(ctx, product_id, user_id, ctx.pricing_strategy)
+        return ctx.execute_command(cmd)
 
     def handle_refund(self, ctx, tx_id: str) -> bool:
-        print("  [EmergencyLockdown] ✗ Refunds suspended during emergency.")
+        print("  [EmergencyLockdown] X Refunds suspended during emergency.")
         return False
 
     def handle_restock(self, ctx, product_id: str, qty: int) -> bool:
-        print(f"  [EmergencyLockdown] Emergency restock: '{product_id}' +{qty}.")
-        ctx.inventory_manager.restock(product_id, qty)
-        return True
+        print(f"  [EmergencyLockdown] Creating RestockCommand (Emergency Restock)...")
+        cmd = RestockCommand(ctx, product_id, qty)
+        return ctx.execute_command(cmd)
 
     def run_diagnostics(self, ctx) -> dict:
         return {"mode": self.mode_name, "alert": "EMERGENCY LOCKDOWN ACTIVE", "hw_healthy": ctx.hardware_controller.is_healthy()}

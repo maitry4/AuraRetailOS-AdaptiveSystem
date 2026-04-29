@@ -47,7 +47,7 @@ class CentralRegistry:
     def get_instance(cls) -> "CentralRegistry":
         return cls()
 
-    # ── Config ───────────────────────────────────────────────────────────────
+    # -- Config ---------------------------------------------------------------
 
     def get_config(self) -> SystemConfig:
         return self._config
@@ -57,7 +57,7 @@ class CentralRegistry:
             if hasattr(self._config, key):
                 setattr(self._config, key, value)
 
-    # ── Kiosk Registration ───────────────────────────────────────────────────
+    # -- Kiosk Registration ---------------------------------------------------
 
     def register_kiosk(self, kiosk: "KioskCore") -> None:
         with self._lock:
@@ -71,7 +71,7 @@ class CentralRegistry:
     def list_kiosks(self) -> Dict[str, str]:
         return {kid: k.operational_status for kid, k in self._kiosks.items()}
 
-    # ── Status ───────────────────────────────────────────────────────────────
+    # -- Status ---------------------------------------------------------------
 
     def update_status(self, kiosk_id: str, status: str) -> None:
         print(f"  [CentralRegistry] Status update — kiosk '{kiosk_id}': {status}.")
@@ -81,7 +81,7 @@ class CentralRegistry:
 
     def activate_emergency(self) -> None:
         self._status.emergency_active = True
-        print("  [CentralRegistry] ⚠  EMERGENCY MODE ACTIVATED system-wide.")
+        print("  [CentralRegistry] !  EMERGENCY MODE ACTIVATED system-wide.")
 
     def increment_transactions(self) -> None:
         with self._lock:

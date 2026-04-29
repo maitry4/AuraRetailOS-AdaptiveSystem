@@ -8,6 +8,12 @@ from hardware.hardware_controller import HardwareController
 from inventory.inventory_manager import InventoryManager
 from inventory.inventory_policy import InventoryPolicy
 from modes.kiosk_mode import KioskMode
+from pricing.pricing_strategy import PricingStrategy
+from pricing.standard_pricing import StandardPricing
+from commands.command import Command
+from persistence.persistence_service import PersistenceService
+from events.event_bus import EventBus
+from events.transaction_completed import TransactionCompletedEvent
 from typing import List
 
 class KioskCore:
@@ -31,9 +37,12 @@ class KioskCore:
         self.inventory_manager = inventory_manager
         self.inventory_policy = inventory_policy
         self._current_mode: KioskMode = initial_mode
-        self._command_history: List = []  # wired by Command pattern (Pattern 5)
+        self._command_history: List[Command] = []
+        self._pricing_strategy: PricingStrategy = StandardPricing() # Default
+        self._persistence = PersistenceService()
+        self._event_bus = EventBus.get_instance()
 
-    # ── State Pattern: mode access & switching ───────────────────────────────
+    # -- State Pattern: mode access & switching -------------------------------
 
     @property
     def current_mode(self) -> KioskMode:
@@ -42,9 +51,41 @@ class KioskCore:
     def switch_mode(self, new_mode: KioskMode) -> None:
         old = self._current_mode.mode_name
         self._current_mode = new_mode
-        print(f"  [KioskCore '{self.kiosk_id}'] Mode switch: {old} → {new_mode.mode_name}")
+        print(f"  [KioskCore '{self.kiosk_id}'] Mode switch: {old} -> {new_mode.mode_name}")
 
-    # ── Derived attribute ────────────────────────────────────────────────────
+    # -- Strategy Pattern: pricing --------------------------------------------
+
+    @property
+    def pricing_strategy(self) -> PricingStrategy:
+        return self._pricing_strategy
+
+    def set_pricing_strategy(self, strategy: PricingStrategy) -> None:
+        print(f"  [KioskCore '{self.kiosk_id}'] Pricing Strategy switch: {self._pricing_strategy.strategy_name} -> {strategy.strategy_name}")
+        self._pricing_strategy = strategy
+
+    # -- Command Pattern: execution & history ----------------------------------
+
+    def execute_command(self, command: Command) -> bool:
+        """Executes a command, records history, logs to file, and publishes events."""
+        success = command.execute()
+        self._command_history.append(command)
+        
+        # Log to file (Maitry's Persistence requirement)
+        self._persistence.log_transaction(command.log())
+
+        # Publish event on success (Maitry's Event requirement)
+        if success and command.__class__.__name__ == "PurchaseItemCommand":
+            from commands.purchase_item_command import PurchaseItemCommand
+            cmd: PurchaseItemCommand = command
+            event = TransactionCompletedEvent(self.kiosk_id, cmd.product_id, cmd.final_price)
+            self._event_bus.publish(event)
+
+        return success
+
+    def get_history_logs(self) -> List[str]:
+        return [cmd.log() for cmd in self._command_history]
+
+    # -- Derived attribute ----------------------------------------------------
 
     @property
     def operational_status(self) -> str:
@@ -53,7 +94,7 @@ class KioskCore:
         hw_label = "HW:OK" if hw_ok else "HW:FAULT"
         return f"{self._current_mode.mode_name} | {hw_label}"
 
-    # ── Request delegation to current mode ──────────────────────────────────
+    # -- Request delegation to current mode ----------------------------------
 
     def handle_request(self, request: dict) -> bool:
         """

@@ -62,11 +62,11 @@ class KioskInterface:
 
         print(f"[KioskInterface] Kiosk '{kiosk_id}' ready. Status: {self._core.operational_status}\n")
 
-    # ── Public Facade API ────────────────────────────────────────────────────
+    # -- Public Facade API ----------------------------------------------------
 
     def purchase_item(self, product_id: str, user_id: str) -> bool:
         """External entry point for a purchase transaction."""
-        print(f"\n{'─'*50}")
+        print(f"\n{'-'*50}")
         print(f"[Facade] purchaseItem(product='{product_id}', user='{user_id}')")
         result = self._core.handle_request({
             "action": "purchase",
@@ -75,20 +75,20 @@ class KioskInterface:
         })
         if result:
             CentralRegistry.get_instance().increment_transactions()
-        print(f"[Facade] Result: {'SUCCESS ✓' if result else 'FAILED ✗'}")
+        print(f"[Facade] Result: {'SUCCESS OK' if result else 'FAILED FAILED'}")
         return result
 
     def refund_transaction(self, tx_id: str) -> bool:
         """External entry point for a refund."""
-        print(f"\n{'─'*50}")
+        print(f"\n{'-'*50}")
         print(f"[Facade] refundTransaction(txId='{tx_id}')")
         result = self._core.handle_request({"action": "refund", "tx_id": tx_id})
-        print(f"[Facade] Result: {'SUCCESS ✓' if result else 'FAILED ✗'}")
+        print(f"[Facade] Result: {'SUCCESS OK' if result else 'FAILED FAILED'}")
         return result
 
     def run_diagnostics(self) -> dict:
         """External entry point to run hardware and software diagnostics."""
-        print(f"\n{'─'*50}")
+        print(f"\n{'-'*50}")
         print(f"[Facade] runDiagnostics()")
         result = self._core.current_mode.run_diagnostics(self._core)
         print(f"[Facade] Diagnostics report: {result}")
@@ -96,17 +96,17 @@ class KioskInterface:
 
     def restock_inventory(self, product_id: str, qty: int) -> bool:
         """External entry point for restocking a product."""
-        print(f"\n{'─'*50}")
+        print(f"\n{'-'*50}")
         print(f"[Facade] restockInventory(product='{product_id}', qty={qty})")
         result = self._core.handle_request({
             "action": "restock",
             "product_id": product_id,
             "qty": qty,
         })
-        print(f"[Facade] Result: {'SUCCESS ✓' if result else 'FAILED ✗'}")
+        print(f"[Facade] Result: {'SUCCESS OK' if result else 'FAILED FAILED'}")
         return result
 
-    # ── Mode-switching helpers (operator use only, still via Facade) ─────────
+    # -- Mode-switching helpers (operator use only, still via Facade) ---------
 
     def set_maintenance_mode(self) -> None:
         print(f"\n[Facade] Switching '{self._core.kiosk_id}' to MAINTENANCE mode.")
@@ -123,11 +123,11 @@ class KioskInterface:
         self._core.switch_mode(PowerSavingMode())
 
     def activate_emergency_lockdown(self) -> None:
-        print(f"\n[Facade] ⚠  EMERGENCY LOCKDOWN on '{self._core.kiosk_id}'.")
+        print(f"\n[Facade] !  EMERGENCY LOCKDOWN on '{self._core.kiosk_id}'.")
         self._core.switch_mode(EmergencyLockdownMode())
         CentralRegistry.get_instance().activate_emergency()
 
-    # ── Status ───────────────────────────────────────────────────────────────
+    # -- Status ---------------------------------------------------------------
 
     @property
     def status(self) -> str:

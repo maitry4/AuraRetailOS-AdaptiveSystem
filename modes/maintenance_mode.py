@@ -7,11 +7,11 @@ class MaintenanceMode(KioskMode):
         return "MAINTENANCE"
 
     def handle_purchase(self, ctx, product_id: str, user_id: str) -> bool:
-        print("  [MaintenanceMode] ✗ Purchases are BLOCKED during maintenance.")
+        print("  [MaintenanceMode] X Purchases are BLOCKED during maintenance.")
         return False
 
     def handle_refund(self, ctx, tx_id: str) -> bool:
-        print("  [MaintenanceMode] ✗ Refunds are BLOCKED during maintenance.")
+        print("  [MaintenanceMode] X Refunds are BLOCKED during maintenance.")
         return False
 
     def handle_restock(self, ctx, product_id: str, qty: int) -> bool:

@@ -1,5 +1,7 @@
-"""modes/active_mode.py — Full normal operation; purchases and refunds allowed."""
 from modes.kiosk_mode import KioskMode
+from commands.purchase_item_command import PurchaseItemCommand
+from commands.refund_command import RefundCommand
+from commands.restock_command import RestockCommand
 
 class ActiveMode(KioskMode):
     @property
@@ -7,42 +9,19 @@ class ActiveMode(KioskMode):
         return "ACTIVE"
 
     def handle_purchase(self, ctx, product_id: str, user_id: str) -> bool:
-        print(f"  [ActiveMode] Processing purchase: product='{product_id}', user='{user_id}'")
-        hw = ctx.hardware_controller
-        if not hw.is_healthy():
-            print("  [ActiveMode] Hardware not healthy — purchase aborted.")
-            return False
-        if not hw.get_verification().verify(user_id, product_id):
-            print("  [ActiveMode] Verification failed — purchase denied.")
-            return False
-        available = ctx.inventory_manager.get_available_stock(product_id)
-        policy_ctx = {"available_stock": available}
-        if not ctx.inventory_policy.can_purchase(product_id, 1, policy_ctx):
-            return False
-        reserved = ctx.inventory_manager.reserve(product_id, 1)
-        if not reserved:
-            print("  [ActiveMode] Could not reserve stock.")
-            return False
-        dispensed = hw.get_dispenser().dispense(product_id)
-        if dispensed:
-            ctx.inventory_manager.commit(product_id, 1)
-            ctx.inventory_policy.on_purchase_complete(product_id, 1)
-            print(f"  [ActiveMode] ✓ Purchase successful.")
-            return True
-        else:
-            ctx.inventory_manager.release_reservation(product_id, 1)
-            print("  [ActiveMode] Dispense failed — reservation released.")
-            return False
+        print(f"  [ActiveMode] Creating PurchaseItemCommand...")
+        cmd = PurchaseItemCommand(ctx, product_id, user_id, ctx.pricing_strategy)
+        return ctx.execute_command(cmd)
 
     def handle_refund(self, ctx, tx_id: str) -> bool:
-        print(f"  [ActiveMode] Processing refund for transaction '{tx_id}'")
-        print(f"  [ActiveMode] ✓ Refund approved.")
-        return True
+        print(f"  [ActiveMode] Creating RefundCommand...")
+        cmd = RefundCommand(ctx, tx_id)
+        return ctx.execute_command(cmd)
 
     def handle_restock(self, ctx, product_id: str, qty: int) -> bool:
-        print(f"  [ActiveMode] Restocking '{product_id}' with {qty} units.")
-        ctx.inventory_manager.restock(product_id, qty)
-        return True
+        print(f"  [ActiveMode] Creating RestockCommand...")
+        cmd = RestockCommand(ctx, product_id, qty)
+        return ctx.execute_command(cmd)
 
     def run_diagnostics(self, ctx) -> dict:
         healthy = ctx.hardware_controller.is_healthy()
